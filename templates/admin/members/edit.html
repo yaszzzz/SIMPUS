@@ -1,0 +1,69 @@
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Edit Anggota</h3>
+        <a href="/admin/members" class="btn btn-secondary">← Kembali</a>
+    </div>
+    <div class="card-body">
+        <form action="/admin/members/{{.Member.ID}}" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="name">Nama Lengkap *</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Masukkan nama lengkap"
+                        value="{{.Member.Name}}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email *</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="email@example.com"
+                        value="{{.Member.Email}}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="phone">Nomor Telepon</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="081234567890"
+                        value="{{.Member.Phone}}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="member_type">Tipe Anggota *</label>
+                    <select id="member_type" name="member_type" class="form-control" required>
+                        <option value="">Pilih Tipe</option>
+                        <option value="mahasiswa" {{if eq .Member.MemberType "mahasiswa" }}selected{{end}}>Mahasiswa
+                        </option>
+                        <option value="guru" {{if eq .Member.MemberType "guru" }}selected{{end}}>Guru</option>
+                        <option value="karyawan" {{if eq .Member.MemberType "karyawan" }}selected{{end}}>Karyawan
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="address">Alamat</label>
+                <textarea id="address" name="address" class="form-control"
+                    placeholder="Alamat lengkap">{{.Member.Address}}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" name="is_active" {{if .Member.IsActive}}checked{{end}}>
+                    Anggota Aktif
+                </label>
+            </div>
+
+            <div class="btn-group" style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        width="18" height="18">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Update Anggota
+                </button>
+                <a href="/admin/members" class="btn btn-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}

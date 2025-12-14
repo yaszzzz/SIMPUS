@@ -1,0 +1,101 @@
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Daftar Anggota</h3>
+        <a href="/admin/members/create" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18"
+                height="18">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            Tambah Anggota
+        </a>
+    </div>
+    <div class="card-body">
+        <form class="search-form" hx-get="/admin/members" hx-target="#members-table" hx-trigger="submit">
+            <input type="text" name="search" class="form-control search-input" placeholder="Cari anggota..."
+                value="{{.Search}}">
+            <button type="submit" class="btn btn-primary">Cari</button>
+        </form>
+
+        <div id="members-table">
+            {{template "members-table" .}}
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "members-table"}}
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Kode</th>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Telepon</th>
+                <th>Tipe</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Members}}
+            {{range .Members}}
+            <tr>
+                <td><strong>{{.MemberCode}}</strong></td>
+                <td>{{.Name}}</td>
+                <td>{{.Email}}</td>
+                <td>{{if .Phone}}{{.Phone}}{{else}}-{{end}}</td>
+                <td>
+                    {{if eq .MemberType "mahasiswa"}}
+                    <span class="badge badge-primary">Mahasiswa</span>
+                    {{else if eq .MemberType "guru"}}
+                    <span class="badge badge-info">Guru</span>
+                    {{else}}
+                    <span class="badge badge-warning">Karyawan</span>
+                    {{end}}
+                </td>
+                <td>
+                    {{if .IsActive}}
+                    <span class="badge badge-success">Aktif</span>
+                    {{else}}
+                    <span class="badge badge-danger">Nonaktif</span>
+                    {{end}}
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <a href="/admin/members/{{.ID}}/edit" class="btn btn-secondary btn-sm">Edit</a>
+                        <button class="btn btn-danger btn-sm" hx-delete="/admin/members/{{.ID}}"
+                            hx-confirm="Hapus anggota '{{.Name}}'?" hx-target="closest tr" hx-swap="outerHTML">
+                            Hapus
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr>
+                <td colspan="7" class="text-center text-muted" style="padding: 3rem;">
+                    Tidak ada anggota ditemukan
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if gt .TotalPages 1}}
+<div class="pagination">
+    {{if gt .Page 1}}
+    <a href="/admin/members?page={{subtract .Page 1}}&search={{.Search}}" class="pagination-btn">← Prev</a>
+    {{end}}
+
+    <span class="text-muted">Halaman {{.Page}} dari {{.TotalPages}}</span>
+
+    {{if lt .Page .TotalPages}}
+    <a href="/admin/members?page={{add .Page 1}}&search={{.Search}}" class="pagination-btn">Next →</a>
+    {{end}}
+</div>
+{{end}}
+{{end}}

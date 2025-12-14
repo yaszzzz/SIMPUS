@@ -1,0 +1,80 @@
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Daftar Kategori</h3>
+        <button class="btn btn-primary" onclick="document.getElementById('add-form').style.display='block'">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18"
+                height="18">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Tambah Kategori
+        </button>
+    </div>
+    <div class="card-body">
+        <!-- Add Form -->
+        <div id="add-form" class="card" style="display: none; margin-bottom: 1.5rem; background: var(--gray-50);">
+            <div class="card-body">
+                <h4 style="margin-bottom: 1rem;">Tambah Kategori Baru</h4>
+                <form action="/admin/categories" method="POST" hx-post="/admin/categories" hx-swap="none"
+                    hx-on::after-request="location.reload()">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nama Kategori *</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Deskripsi</label>
+                            <input type="text" name="description" class="form-control">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
+                        <button type="button" class="btn btn-secondary btn-sm"
+                            onclick="document.getElementById('add-form').style.display='none'">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama</th>
+                        <th>Deskripsi</th>
+                        <th>Jumlah Buku</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{if .Categories}}
+                    {{range .Categories}}
+                    <tr>
+                        <td>{{.ID}}</td>
+                        <td><strong>{{.Name}}</strong></td>
+                        <td>{{if .Description}}{{.Description}}{{else}}-{{end}}</td>
+                        <td><span class="badge badge-primary">{{.BookCount}} buku</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-danger btn-sm" hx-delete="/admin/categories/{{.ID}}"
+                                    hx-confirm="Hapus kategori '{{.Name}}'?" hx-target="closest tr" hx-swap="outerHTML">
+                                    Hapus
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {{end}}
+                    {{else}}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted" style="padding: 3rem;">
+                            Tidak ada kategori ditemukan
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{end}}

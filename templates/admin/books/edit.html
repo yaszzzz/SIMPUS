@@ -1,0 +1,86 @@
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Edit Buku</h3>
+        <a href="/admin/books" class="btn btn-secondary">← Kembali</a>
+    </div>
+    <div class="card-body">
+        <form action="/admin/books/{{.Book.ID}}" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="isbn">ISBN</label>
+                    <input type="text" id="isbn" name="isbn" class="form-control" placeholder="978-xxx-xxx-xxx-x"
+                        value="{{.Book.ISBN}}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="title">Judul Buku *</label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="Masukkan judul buku"
+                        value="{{.Book.Title}}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="category_id">Kategori</label>
+                    <select id="category_id" name="category_id" class="form-control">
+                        <option value="">Pilih Kategori</option>
+                        {{range .Categories}}
+                        <option value="{{.ID}}" {{if and $.Book.CategoryID (eq (deref $.Book.CategoryID)
+                            .ID)}}selected{{end}}>{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="author_id">Penulis</label>
+                    <select id="author_id" name="author_id" class="form-control">
+                        <option value="">Pilih Penulis</option>
+                        {{range .Authors}}
+                        <option value="{{.ID}}" {{if and $.Book.AuthorID (eq (deref $.Book.AuthorID)
+                            .ID)}}selected{{end}}>{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="publisher">Penerbit</label>
+                    <input type="text" id="publisher" name="publisher" class="form-control" placeholder="Nama penerbit"
+                        value="{{.Book.Publisher}}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="publish_year">Tahun Terbit</label>
+                    <input type="number" id="publish_year" name="publish_year" class="form-control" placeholder="2024"
+                        min="1900" max="2100" value="{{.Book.PublishYear}}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="stock">Jumlah Stok *</label>
+                <input type="number" id="stock" name="stock" class="form-control" placeholder="0" min="0"
+                    value="{{.Book.Stock}}" required style="max-width: 200px;">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="description">Deskripsi</label>
+                <textarea id="description" name="description" class="form-control"
+                    placeholder="Deskripsi singkat buku">{{.Book.Description}}</textarea>
+            </div>
+
+            <div class="btn-group" style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        width="18" height="18">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Update Buku
+                </button>
+                <a href="/admin/books" class="btn btn-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}

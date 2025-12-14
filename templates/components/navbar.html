@@ -1,0 +1,26 @@
+{{define "navbar"}}
+<header class="navbar">
+    <div class="navbar-left">
+        <h2 class="page-title">{{.Title}}</h2>
+    </div>
+    <div class="navbar-right">
+        <div class="user-menu">
+            <div class="user-avatar">
+                {{if .User}}{{slice .User.Username 0 1 | upper}}{{else}}A{{end}}
+            </div>
+            <div class="user-info">
+                <span class="user-name">{{if .User}}{{.User.Username}}{{else}}Admin{{end}}</span>
+                <span class="user-role">{{if .User}}{{.User.Role}}{{else}}Administrator{{end}}</span>
+            </div>
+        </div>
+        <a href="/logout" class="btn btn-secondary btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18"
+                height="18">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Logout
+        </a>
+    </div>
+</header>
+{{end}}

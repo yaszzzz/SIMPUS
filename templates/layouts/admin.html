@@ -1,0 +1,44 @@
+{{define "admin.html"}}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/htmx.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        {{template "sidebar" .}}
+        <div class="main-content">
+            {{template "navbar" .}}
+            <div class="page-content">
+                {{template "content" .}}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // HTMX loading indicator
+        document.body.addEventListener('htmx:beforeRequest', function (evt) {
+            evt.target.classList.add('loading');
+        });
+        document.body.addEventListener('htmx:afterRequest', function (evt) {
+            evt.target.classList.remove('loading');
+        });
+
+        // Confirm delete
+        function confirmDelete(message) {
+            return confirm(message || 'Apakah Anda yakin ingin menghapus data ini?');
+        }
+    </script>
+</body>
+
+</html>
+{{end}}

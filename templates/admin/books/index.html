@@ -1,0 +1,105 @@
+{{define "content"}}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Daftar Buku</h3>
+        <a href="/admin/books/create" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18"
+                height="18">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Tambah Buku
+        </a>
+    </div>
+    <div class="card-body">
+        <form class="search-form" hx-get="/admin/books" hx-target="#books-table"
+            hx-trigger="submit, keyup delay:500ms from:#search">
+            <input type="text" id="search" name="search" class="form-control search-input" placeholder="Cari buku..."
+                value="{{.Search}}">
+            <select name="category" class="form-control" style="max-width: 200px;" hx-get="/admin/books"
+                hx-target="#books-table" hx-trigger="change">
+                <option value="">Semua Kategori</option>
+                {{range .Categories}}
+                <option value="{{.ID}}" {{if eq $.CategoryID .ID}}selected{{end}}>{{.Name}}</option>
+                {{end}}
+            </select>
+            <button type="submit" class="btn btn-primary">Cari</button>
+        </form>
+
+        <div id="books-table">
+            {{template "books-table" .}}
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "books-table"}}
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ISBN</th>
+                <th>Judul</th>
+                <th>Kategori</th>
+                <th>Penulis</th>
+                <th>Stok</th>
+                <th>Tersedia</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Books}}
+            {{range .Books}}
+            <tr>
+                <td>{{if .ISBN}}{{.ISBN}}{{else}}-{{end}}</td>
+                <td>
+                    <strong>{{.Title}}</strong>
+                    {{if .Publisher}}<br><small class="text-muted">{{.Publisher}} ({{.PublishYear}})</small>{{end}}
+                </td>
+                <td>{{if .Category}}<span class="badge badge-primary">{{.Category.Name}}</span>{{else}}-{{end}}</td>
+                <td>{{if .Author}}{{.Author.Name}}{{else}}-{{end}}</td>
+                <td>{{.Stock}}</td>
+                <td>
+                    {{if gt .Available 0}}
+                    <span class="badge badge-success">{{.Available}}</span>
+                    {{else}}
+                    <span class="badge badge-danger">0</span>
+                    {{end}}
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <a href="/admin/books/{{.ID}}/edit" class="btn btn-secondary btn-sm">Edit</a>
+                        <button class="btn btn-danger btn-sm" hx-delete="/admin/books/{{.ID}}"
+                            hx-confirm="Hapus buku '{{.Title}}'?" hx-target="closest tr" hx-swap="outerHTML">
+                            Hapus
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr>
+                <td colspan="7" class="text-center text-muted" style="padding: 3rem;">
+                    Tidak ada buku ditemukan
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{if gt .TotalPages 1}}
+<div class="pagination">
+    {{if gt .Page 1}}
+    <a href="/admin/books?page={{subtract .Page 1}}&search={{.Search}}&category={{.CategoryID}}"
+        class="pagination-btn">← Prev</a>
+    {{end}}
+
+    <span class="text-muted">Halaman {{.Page}} dari {{.TotalPages}}</span>
+
+    {{if lt .Page .TotalPages}}
+    <a href="/admin/books?page={{add .Page 1}}&search={{.Search}}&category={{.CategoryID}}" class="pagination-btn">Next
+        →</a>
+    {{end}}
+</div>
+{{end}}
+{{end}}

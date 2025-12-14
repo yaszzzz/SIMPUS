@@ -1,0 +1,131 @@
+{{define "content"}}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+        </div>
+        <div class="stat-content">
+            <h3>{{.Total}}</h3>
+            <p>Total Transaksi</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <div class="stat-content">
+            <h3>{{.ReturnedCount}}</h3>
+            <p>Dikembalikan</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon red">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <div class="stat-content">
+            <h3>{{.OverdueCount}}</h3>
+            <p>Terlambat</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon amber">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <div class="stat-content">
+            <h3>Rp {{printf "%.0f" .TotalFine}}</h3>
+            <p>Total Denda</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Riwayat Transaksi</h3>
+    </div>
+    <div class="card-body">
+        <form class="search-form" hx-get="/admin/reports" hx-target="#report-table" hx-trigger="submit">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Dari Tanggal</label>
+                <input type="date" name="from" class="form-control" value="{{.FromDate}}" style="max-width: 180px;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Sampai Tanggal</label>
+                <input type="date" name="to" class="form-control" value="{{.ToDate}}" style="max-width: 180px;">
+            </div>
+            <button type="submit" class="btn btn-primary" style="align-self: flex-end;">Filter</button>
+        </form>
+
+        <div id="report-table" style="margin-top: 1.5rem;">
+            {{template "report-table" .}}
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "report-table"}}
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Anggota</th>
+                <th>Buku</th>
+                <th>Tanggal Pinjam</th>
+                <th>Tanggal Kembali</th>
+                <th>Status</th>
+                <th>Denda</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{if .Borrowings}}
+            {{range .Borrowings}}
+            <tr>
+                <td>#{{.ID}}</td>
+                <td>{{if .Member}}{{.Member.Name}}{{else}}-{{end}}</td>
+                <td>{{if .Book}}{{.Book.Title}}{{else}}-{{end}}</td>
+                <td>{{.BorrowDate.Format "02 Jan 2006"}}</td>
+                <td>{{if .ReturnDate}}{{.ReturnDate.Format "02 Jan 2006"}}{{else}}-{{end}}</td>
+                <td>
+                    {{if eq .Status "dipinjam"}}
+                    <span class="badge badge-warning">Dipinjam</span>
+                    {{else if eq .Status "dikembalikan"}}
+                    <span class="badge badge-success">Dikembalikan</span>
+                    {{else}}
+                    <span class="badge badge-danger">Terlambat</span>
+                    {{end}}
+                </td>
+                <td>
+                    {{if gt .Fine 0}}
+                    <span class="text-danger">Rp {{printf "%.0f" .Fine}}</span>
+                    {{else}}
+                    -
+                    {{end}}
+                </td>
+            </tr>
+            {{end}}
+            {{else}}
+            <tr>
+                <td colspan="7" class="text-center text-muted" style="padding: 3rem;">
+                    Tidak ada transaksi ditemukan
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}

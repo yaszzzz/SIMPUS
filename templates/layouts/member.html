@@ -1,0 +1,39 @@
+{{define "member.html"}}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/htmx.min.js"></script>
+    <style>
+        .member-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-6);
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="main-content">
+            {{template "member-navbar" .}}
+            <div class="member-container">
+                {{template "content" .}}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+{{end}}
