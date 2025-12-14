@@ -1,4 +1,4 @@
-package services
+package borrowings
 
 import (
 	"errors"
@@ -6,40 +6,48 @@ import (
 	"math"
 	"time"
 
+	"simpus/internal/app/books"
+	"simpus/internal/app/members"
 	"simpus/internal/models"
-	"simpus/internal/repository"
 )
 
-type BorrowService struct {
-	borrowRepo *repository.BorrowingRepository
-	bookRepo   *repository.BookRepository
-	memberRepo *repository.MemberRepository
-	notifRepo  *repository.NotificationRepository
+// NotificationRepository defines the interface for notification repository
+// to avoid import cycle with legacy repository package if needed,
+// though currently we might still import it if no cycle exists.
+type NotificationRepository interface {
+	Create(notif *models.NotificationCreate) (int64, error)
 }
 
-func NewBorrowService(
-	borrowRepo *repository.BorrowingRepository,
-	bookRepo *repository.BookRepository,
-	memberRepo *repository.MemberRepository,
-	notifRepo *repository.NotificationRepository,
-) *BorrowService {
-	return &BorrowService{
-		borrowRepo: borrowRepo,
+type Service struct {
+	repo       *Repository
+	bookRepo   *books.BookRepository
+	memberRepo *members.Repository
+	notifRepo  NotificationRepository
+}
+
+func NewService(
+	repo *Repository,
+	bookRepo *books.BookRepository,
+	memberRepo *members.Repository,
+	notifRepo NotificationRepository,
+) *Service {
+	return &Service{
+		repo:       repo,
 		bookRepo:   bookRepo,
 		memberRepo: memberRepo,
 		notifRepo:  notifRepo,
 	}
 }
 
-func (s *BorrowService) GetBorrowings(filter models.BorrowingFilter) ([]models.Borrowing, int, error) {
-	return s.borrowRepo.FindAll(filter)
+func (s *Service) GetBorrowings(filter models.BorrowingFilter) ([]models.Borrowing, int, error) {
+	return s.repo.FindAll(filter)
 }
 
-func (s *BorrowService) GetBorrowing(id int) (*models.Borrowing, error) {
-	return s.borrowRepo.FindByID(id)
+func (s *Service) GetBorrowing(id int) (*models.Borrowing, error) {
+	return s.repo.FindByID(id)
 }
 
-func (s *BorrowService) CreateBorrowing(data *models.BorrowingCreate, userID int) (int64, error) {
+func (s *Service) CreateBorrowing(data *models.BorrowingCreate, userID int) (int64, error) {
 	// Check if book is available
 	book, err := s.bookRepo.FindByID(data.BookID)
 	if err != nil {
@@ -66,7 +74,7 @@ func (s *BorrowService) CreateBorrowing(data *models.BorrowingCreate, userID int
 	dueDate := time.Now().AddDate(0, 0, borrowDays)
 
 	// Create borrowing
-	id, err := s.borrowRepo.Create(data, userID, dueDate)
+	id, err := s.repo.Create(data, userID, dueDate)
 	if err != nil {
 		return 0, err
 	}
@@ -80,8 +88,8 @@ func (s *BorrowService) CreateBorrowing(data *models.BorrowingCreate, userID int
 	return id, nil
 }
 
-func (s *BorrowService) ReturnBook(id int) (*models.Borrowing, error) {
-	borrowing, err := s.borrowRepo.FindByID(id)
+func (s *Service) ReturnBook(id int) (*models.Borrowing, error) {
+	borrowing, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, errors.New("peminjaman tidak ditemukan")
 	}
@@ -103,7 +111,7 @@ func (s *BorrowService) ReturnBook(id int) (*models.Borrowing, error) {
 		Fine:       fine,
 	}
 
-	err = s.borrowRepo.Return(id, returnData)
+	err = s.repo.Return(id, returnData)
 	if err != nil {
 		return nil, err
 	}
@@ -115,24 +123,24 @@ func (s *BorrowService) ReturnBook(id int) (*models.Borrowing, error) {
 	}
 
 	// Get updated borrowing
-	borrowing, _ = s.borrowRepo.FindByID(id)
+	borrowing, _ = s.repo.FindByID(id)
 	return borrowing, nil
 }
 
-func (s *BorrowService) GetActiveCount() (int, error) {
-	return s.borrowRepo.CountActive()
+func (s *Service) GetActiveCount() (int, error) {
+	return s.repo.CountActive()
 }
 
-func (s *BorrowService) GetOverdueCount() (int, error) {
-	return s.borrowRepo.CountOverdue()
+func (s *Service) GetOverdueCount() (int, error) {
+	return s.repo.CountOverdue()
 }
 
-func (s *BorrowService) GetMemberBorrowings(memberID int) ([]models.Borrowing, error) {
-	return s.borrowRepo.GetMemberBorrowings(memberID)
+func (s *Service) GetMemberBorrowings(memberID int) ([]models.Borrowing, error) {
+	return s.repo.GetMemberBorrowings(memberID)
 }
 
-func (s *BorrowService) CheckAndCreateOverdueNotifications() (int, error) {
-	overdue, err := s.borrowRepo.FindOverdue()
+func (s *Service) CheckAndCreateOverdueNotifications() (int, error) {
+	overdue, err := s.repo.FindOverdue()
 	if err != nil {
 		return 0, err
 	}

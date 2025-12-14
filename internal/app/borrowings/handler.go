@@ -1,39 +1,39 @@
-package handlers
+package borrowings
 
 import (
 	"html/template"
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"time"
 
+	"simpus/internal/app/books"
+	"simpus/internal/app/members"
 	"simpus/internal/middleware"
 	"simpus/internal/models"
-	"simpus/internal/services"
 )
 
-type BorrowHandler struct {
-	borrowService *services.BorrowService
-	bookService   *services.BookService
-	memberService *services.MemberService
+type Handler struct {
+	service       *Service
+	bookService   *books.Service
+	memberService *members.Service
 	templates     *template.Template
 }
 
-func NewBorrowHandler(
-	borrowService *services.BorrowService,
-	bookService *services.BookService,
-	memberService *services.MemberService,
+func NewHandler(
+	service *Service,
+	bookService *books.Service,
+	memberService *members.Service,
 	templates *template.Template,
-) *BorrowHandler {
-	return &BorrowHandler{
-		borrowService: borrowService,
+) *Handler {
+	return &Handler{
+		service:       service,
 		bookService:   bookService,
 		memberService: memberService,
 		templates:     templates,
 	}
 }
 
-func (h *BorrowHandler) Index(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	if page < 1 {
 		page = 1
@@ -46,7 +46,7 @@ func (h *BorrowHandler) Index(w http.ResponseWriter, r *http.Request) {
 		Limit:  10,
 	}
 
-	borrowings, total, err := h.borrowService.GetBorrowings(filter)
+	borrowings, total, err := h.service.GetBorrowings(filter)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -74,7 +74,7 @@ func (h *BorrowHandler) Index(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "admin/borrowings/index.html", data)
 }
 
-func (h *BorrowHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	members, _, _ := h.memberService.GetMembers(1, 100, "")
 
 	filter := models.BookFilter{Page: 1, Limit: 100, Available: true}
@@ -97,7 +97,7 @@ func (h *BorrowHandler) Create(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "admin/borrowings/create.html", data)
 }
 
-func (h *BorrowHandler) Store(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Store(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Form tidak valid", http.StatusBadRequest)
 		return
@@ -116,7 +116,7 @@ func (h *BorrowHandler) Store(w http.ResponseWriter, r *http.Request) {
 		Notes:      r.FormValue("notes"),
 	}
 
-	_, err := h.borrowService.CreateBorrowing(data, claims.UserID)
+	_, err := h.service.CreateBorrowing(data, claims.UserID)
 	if err != nil {
 		if r.Header.Get("HX-Request") == "true" {
 			w.Header().Set("HX-Retarget", "#error-message")
@@ -135,10 +135,10 @@ func (h *BorrowHandler) Store(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/borrowings", http.StatusSeeOther)
 }
 
-func (h *BorrowHandler) Return(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Return(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.PathValue("id"))
 
-	borrowing, err := h.borrowService.ReturnBook(id)
+	borrowing, err := h.service.ReturnBook(id)
 	if err != nil {
 		if r.Header.Get("HX-Request") == "true" {
 			w.WriteHeader(http.StatusBadRequest)
@@ -163,63 +163,7 @@ func (h *BorrowHandler) Return(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/borrowings", http.StatusSeeOther)
 }
 
-func (h *BorrowHandler) Report(w http.ResponseWriter, r *http.Request) {
-	fromDate := r.URL.Query().Get("from")
-	toDate := r.URL.Query().Get("to")
-
-	filter := models.BorrowingFilter{
-		Page:  1,
-		Limit: 1000,
-	}
-
-	if fromDate != "" {
-		t, _ := time.Parse("2006-01-02", fromDate)
-		filter.FromDate = t
-	}
-	if toDate != "" {
-		t, _ := time.Parse("2006-01-02", toDate)
-		filter.ToDate = t
-	}
-
-	borrowings, total, _ := h.borrowService.GetBorrowings(filter)
-
-	claims := middleware.GetUserFromContext(r.Context())
-
-	// Calculate stats
-	var totalFine float64
-	returnedCount := 0
-	overdueCount := 0
-	for _, b := range borrowings {
-		totalFine += b.Fine
-		if b.Status == "dikembalikan" {
-			returnedCount++
-		}
-		if b.Status == "terlambat" {
-			overdueCount++
-		}
-	}
-
-	data := map[string]interface{}{
-		"Title":         "Laporan Transaksi - SIMPUS",
-		"Borrowings":    borrowings,
-		"Total":         total,
-		"TotalFine":     totalFine,
-		"ReturnedCount": returnedCount,
-		"OverdueCount":  overdueCount,
-		"FromDate":      fromDate,
-		"ToDate":        toDate,
-		"User":          claims,
-	}
-
-	if r.Header.Get("HX-Request") == "true" {
-		h.renderPartial(w, "admin/reports/table.html", data)
-		return
-	}
-
-	h.render(w, "admin/reports/index.html", data)
-}
-
-func (h *BorrowHandler) render(w http.ResponseWriter, name string, data interface{}) {
+func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
 	tmpl, err := template.ParseFiles(
 		filepath.Join("templates", "layouts", "admin.html"),
 		filepath.Join("templates", "components", "sidebar.html"),
@@ -236,7 +180,7 @@ func (h *BorrowHandler) render(w http.ResponseWriter, name string, data interfac
 	}
 }
 
-func (h *BorrowHandler) renderPartial(w http.ResponseWriter, name string, data interface{}) {
+func (h *Handler) renderPartial(w http.ResponseWriter, name string, data interface{}) {
 	tmpl, err := template.ParseFiles(filepath.Join("templates", name))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -1,27 +1,25 @@
-package handlers
+package auth
 
 import (
 	"html/template"
 	"net/http"
 	"path/filepath"
 	"time"
-
-	"simpus/internal/services"
 )
 
-type AuthHandler struct {
-	authService *services.AuthService
-	templates   *template.Template
+type Handler struct {
+	service   *Service
+	templates *template.Template
 }
 
-func NewAuthHandler(authService *services.AuthService, templates *template.Template) *AuthHandler {
-	return &AuthHandler{
-		authService: authService,
-		templates:   templates,
+func NewHandler(service *Service, templates *template.Template) *Handler {
+	return &Handler{
+		service:   service,
+		templates: templates,
 	}
 }
 
-func (h *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) LoginPage(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"Title": "Login Admin - SIMPUS",
 		"Error": r.URL.Query().Get("error"),
@@ -29,7 +27,7 @@ func (h *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "auth/login.html", data)
 }
 
-func (h *AuthHandler) MemberLoginPage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) MemberLoginPage(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"Title": "Login Anggota - SIMPUS",
 		"Error": r.URL.Query().Get("error"),
@@ -37,7 +35,7 @@ func (h *AuthHandler) MemberLoginPage(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "auth/login-member.html", data)
 }
 
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Redirect(w, r, "/login?error=Form tidak valid", http.StatusSeeOther)
 		return
@@ -46,7 +44,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	user, token, err := h.authService.LoginAdmin(username, password)
+	user, token, err := h.service.LoginAdmin(username, password)
 	if err != nil {
 		http.Redirect(w, r, "/login?error="+err.Error(), http.StatusSeeOther)
 		return
@@ -58,7 +56,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 }
 
-func (h *AuthHandler) MemberLogin(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) MemberLogin(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Redirect(w, r, "/login/member?error=Form tidak valid", http.StatusSeeOther)
 		return
@@ -67,7 +65,7 @@ func (h *AuthHandler) MemberLogin(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
-	member, token, err := h.authService.LoginMember(email, password)
+	member, token, err := h.service.LoginMember(email, password)
 	if err != nil {
 		http.Redirect(w, r, "/login/member?error="+err.Error(), http.StatusSeeOther)
 		return
@@ -79,7 +77,7 @@ func (h *AuthHandler) MemberLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/member/dashboard", http.StatusSeeOther)
 }
 
-func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    "",
@@ -90,7 +88,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-func (h *AuthHandler) setTokenCookie(w http.ResponseWriter, token string) {
+func (h *Handler) setTokenCookie(w http.ResponseWriter, token string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    token,
@@ -101,7 +99,7 @@ func (h *AuthHandler) setTokenCookie(w http.ResponseWriter, token string) {
 	})
 }
 
-func (h *AuthHandler) render(w http.ResponseWriter, name string, data interface{}) {
+func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
 	tmpl, err := template.ParseFiles(
 		filepath.Join("templates", "layouts", "auth.html"),
 		filepath.Join("templates", name),

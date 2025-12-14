@@ -1,19 +1,19 @@
-package repository
+package auth
 
 import (
 	"database/sql"
 	"simpus/internal/models"
 )
 
-type UserRepository struct {
+type Repository struct {
 	db *sql.DB
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository {
-	return &UserRepository{db: db}
+func NewRepository(db *sql.DB) *Repository {
+	return &Repository{db: db}
 }
 
-func (r *UserRepository) FindByUsername(username string) (*models.User, error) {
+func (r *Repository) FindByUsername(username string) (*models.User, error) {
 	user := &models.User{}
 	query := `SELECT id, username, email, password, name, role, is_active, created_at, updated_at 
 			  FROM users WHERE username = ?`
@@ -28,7 +28,7 @@ func (r *UserRepository) FindByUsername(username string) (*models.User, error) {
 	return user, nil
 }
 
-func (r *UserRepository) FindByID(id int) (*models.User, error) {
+func (r *Repository) FindByID(id int) (*models.User, error) {
 	user := &models.User{}
 	query := `SELECT id, username, email, password, name, role, is_active, created_at, updated_at 
 			  FROM users WHERE id = ?`
@@ -43,7 +43,7 @@ func (r *UserRepository) FindByID(id int) (*models.User, error) {
 	return user, nil
 }
 
-func (r *UserRepository) Create(user *models.UserCreate, hashedPassword string) (int64, error) {
+func (r *Repository) Create(user *models.UserCreate, hashedPassword string) (int64, error) {
 	query := `INSERT INTO users (username, email, password, name, role) VALUES (?, ?, ?, ?, ?)`
 
 	result, err := r.db.Exec(query, user.Username, user.Email, hashedPassword, user.Name, user.Role)
@@ -53,7 +53,7 @@ func (r *UserRepository) Create(user *models.UserCreate, hashedPassword string) 
 	return result.LastInsertId()
 }
 
-func (r *UserRepository) FindAll() ([]models.User, error) {
+func (r *Repository) FindAll() ([]models.User, error) {
 	query := `SELECT id, username, email, password, name, role, is_active, created_at, updated_at 
 			  FROM users ORDER BY created_at DESC`
 

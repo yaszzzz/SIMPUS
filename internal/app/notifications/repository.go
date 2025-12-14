@@ -1,19 +1,19 @@
-package repository
+package notifications
 
 import (
 	"database/sql"
 	"simpus/internal/models"
 )
 
-type NotificationRepository struct {
+type Repository struct {
 	db *sql.DB
 }
 
-func NewNotificationRepository(db *sql.DB) *NotificationRepository {
-	return &NotificationRepository{db: db}
+func NewRepository(db *sql.DB) *Repository {
+	return &Repository{db: db}
 }
 
-func (r *NotificationRepository) FindByMember(memberID int, limit int) ([]models.Notification, error) {
+func (r *Repository) FindByMember(memberID int, limit int) ([]models.Notification, error) {
 	query := `SELECT id, borrowing_id, member_id, type, title, message, is_read, created_at
 			  FROM notifications WHERE member_id = ? ORDER BY created_at DESC LIMIT ?`
 
@@ -41,7 +41,7 @@ func (r *NotificationRepository) FindByMember(memberID int, limit int) ([]models
 	return notifications, nil
 }
 
-func (r *NotificationRepository) Create(n *models.NotificationCreate) (int64, error) {
+func (r *Repository) Create(n *models.NotificationCreate) (int64, error) {
 	query := `INSERT INTO notifications (borrowing_id, member_id, type, title, message) VALUES (?, ?, ?, ?, ?)`
 
 	var borrowingID interface{}
@@ -56,23 +56,23 @@ func (r *NotificationRepository) Create(n *models.NotificationCreate) (int64, er
 	return result.LastInsertId()
 }
 
-func (r *NotificationRepository) MarkAsRead(id int) error {
+func (r *Repository) MarkAsRead(id int) error {
 	_, err := r.db.Exec(`UPDATE notifications SET is_read = TRUE WHERE id = ?`, id)
 	return err
 }
 
-func (r *NotificationRepository) MarkAllAsRead(memberID int) error {
+func (r *Repository) MarkAllAsRead(memberID int) error {
 	_, err := r.db.Exec(`UPDATE notifications SET is_read = TRUE WHERE member_id = ?`, memberID)
 	return err
 }
 
-func (r *NotificationRepository) CountUnread(memberID int) (int, error) {
+func (r *Repository) CountUnread(memberID int) (int, error) {
 	var count int
 	err := r.db.QueryRow(`SELECT COUNT(*) FROM notifications WHERE member_id = ? AND is_read = FALSE`, memberID).Scan(&count)
 	return count, err
 }
 
-func (r *NotificationRepository) Delete(id int) error {
+func (r *Repository) Delete(id int) error {
 	_, err := r.db.Exec(`DELETE FROM notifications WHERE id = ?`, id)
 	return err
 }

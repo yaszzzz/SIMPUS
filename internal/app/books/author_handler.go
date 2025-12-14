@@ -1,4 +1,4 @@
-package handlers
+package books
 
 import (
 	"html/template"
@@ -8,23 +8,22 @@ import (
 
 	"simpus/internal/middleware"
 	"simpus/internal/models"
-	"simpus/internal/services"
 )
 
 type AuthorHandler struct {
-	bookService *services.BookService
-	templates   *template.Template
+	service   *Service
+	templates *template.Template
 }
 
-func NewAuthorHandler(bookService *services.BookService, templates *template.Template) *AuthorHandler {
+func NewAuthorHandler(service *Service, templates *template.Template) *AuthorHandler {
 	return &AuthorHandler{
-		bookService: bookService,
-		templates:   templates,
+		service:   service,
+		templates: templates,
 	}
 }
 
 func (h *AuthorHandler) Index(w http.ResponseWriter, r *http.Request) {
-	authors, err := h.bookService.GetAuthors()
+	authors, err := h.service.GetAuthors()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -57,7 +56,7 @@ func (h *AuthorHandler) Store(w http.ResponseWriter, r *http.Request) {
 		Bio:  r.FormValue("bio"),
 	}
 
-	_, err := h.bookService.CreateAuthor(data)
+	_, err := h.service.CreateAuthor(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -85,7 +84,7 @@ func (h *AuthorHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Bio:  r.FormValue("bio"),
 	}
 
-	err := h.bookService.UpdateAuthor(id, data)
+	err := h.service.UpdateAuthor(id, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -102,7 +101,7 @@ func (h *AuthorHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *AuthorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.PathValue("id"))
 
-	err := h.bookService.DeleteAuthor(id)
+	err := h.service.DeleteAuthor(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

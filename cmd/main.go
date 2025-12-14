@@ -12,10 +12,14 @@ import (
 
 	"simpus/config"
 	"simpus/database"
-	"simpus/internal/handlers"
+	"simpus/internal/app/auth"
+	"simpus/internal/app/books"
+	"simpus/internal/app/borrowings"
+	"simpus/internal/app/dashboard"
+	"simpus/internal/app/members"
+	"simpus/internal/app/notifications"
+	"simpus/internal/app/reports"
 	authMiddleware "simpus/internal/middleware"
-	"simpus/internal/repository"
-	"simpus/internal/services"
 )
 
 func main() {
@@ -34,20 +38,29 @@ func main() {
 	log.Println("Connected to database successfully")
 
 	// Initialize repositories
-	userRepo := repository.NewUserRepository(database.DB)
-	memberRepo := repository.NewMemberRepository(database.DB)
-	categoryRepo := repository.NewCategoryRepository(database.DB)
-	authorRepo := repository.NewAuthorRepository(database.DB)
-	bookRepo := repository.NewBookRepository(database.DB)
-	borrowRepo := repository.NewBorrowingRepository(database.DB)
-	notifRepo := repository.NewNotificationRepository(database.DB)
+	// Auth
+	userRepo := auth.NewRepository(database.DB)
+
+	// Books
+	categoryRepo := books.NewCategoryRepository(database.DB)
+	authorRepo := books.NewAuthorRepository(database.DB)
+	bookRepo := books.NewBookRepository(database.DB)
+
+	// Members
+	memberRepo := members.NewRepository(database.DB)
+
+	// Borrowings
+	borrowRepo := borrowings.NewRepository(database.DB)
+
+	// Notifications
+	notifRepo := notifications.NewRepository(database.DB)
 
 	// Initialize services
-	authService := services.NewAuthService(userRepo, memberRepo, cfg)
-	bookService := services.NewBookService(bookRepo, categoryRepo, authorRepo)
-	memberService := services.NewMemberService(memberRepo)
-	borrowService := services.NewBorrowService(borrowRepo, bookRepo, memberRepo, notifRepo)
-	notifService := services.NewNotificationService(notifRepo)
+	authService := auth.NewService(userRepo, memberRepo, cfg)
+	bookService := books.NewService(bookRepo, categoryRepo, authorRepo)
+	memberService := members.NewService(memberRepo)
+	borrowService := borrowings.NewService(borrowRepo, bookRepo, memberRepo, notifRepo)
+	notifService := notifications.NewService(notifRepo)
 
 	// Initialize template functions
 	funcMap := template.FuncMap{
@@ -82,13 +95,14 @@ func main() {
 	templates := template.New("").Funcs(funcMap)
 
 	// Initialize handlers
-	authHandler := handlers.NewAuthHandler(authService, templates)
-	dashboardHandler := handlers.NewDashboardHandler(bookService, memberService, borrowService, templates)
-	bookHandler := handlers.NewBookHandler(bookService, templates)
-	memberHandler := handlers.NewMemberHandler(memberService, templates)
-	borrowHandler := handlers.NewBorrowHandler(borrowService, bookService, memberService, templates)
-	categoryHandler := handlers.NewCategoryHandler(bookService, templates)
-	authorHandler := handlers.NewAuthorHandler(bookService, templates)
+	authHandler := auth.NewHandler(authService, templates)
+	bookHandler := books.NewBookHandler(bookService, templates)
+	categoryHandler := books.NewCategoryHandler(bookService, templates)
+	authorHandler := books.NewAuthorHandler(bookService, templates)
+	memberHandler := members.NewHandler(memberService, templates)
+	borrowHandler := borrowings.NewHandler(borrowService, bookService, memberService, templates)
+	dashboardHandler := dashboard.NewHandler(bookService, memberService, borrowService, templates)
+	reportHandler := reports.NewHandler(borrowService, templates)
 
 	// Initialize middleware
 	authMw := authMiddleware.NewAuthMiddleware(authService)
@@ -161,7 +175,7 @@ func main() {
 		r.Post("/borrowings/{id}/return", borrowHandler.Return)
 
 		// Reports
-		r.Get("/reports", borrowHandler.Report)
+		r.Get("/reports", reportHandler.Index)
 	})
 
 	// Member routes (protected)

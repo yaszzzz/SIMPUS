@@ -1,4 +1,4 @@
-package repository
+package members
 
 import (
 	"database/sql"
@@ -6,15 +6,15 @@ import (
 	"simpus/internal/models"
 )
 
-type MemberRepository struct {
+type Repository struct {
 	db *sql.DB
 }
 
-func NewMemberRepository(db *sql.DB) *MemberRepository {
-	return &MemberRepository{db: db}
+func NewRepository(db *sql.DB) *Repository {
+	return &Repository{db: db}
 }
 
-func (r *MemberRepository) FindAll(page, limit int, search string) ([]models.Member, int, error) {
+func (r *Repository) FindAll(page, limit int, search string) ([]models.Member, int, error) {
 	offset := (page - 1) * limit
 
 	// Count total
@@ -35,7 +35,7 @@ func (r *MemberRepository) FindAll(page, limit int, search string) ([]models.Mem
 
 	// Get data
 	query := `SELECT id, member_code, name, email, password, phone, member_type, address, is_active, created_at, updated_at 
-			  FROM members WHERE 1=1`
+              FROM members WHERE 1=1`
 
 	if search != "" {
 		query += ` AND (name LIKE ? OR email LIKE ? OR member_code LIKE ?)`
@@ -67,11 +67,11 @@ func (r *MemberRepository) FindAll(page, limit int, search string) ([]models.Mem
 	return members, total, nil
 }
 
-func (r *MemberRepository) FindByID(id int) (*models.Member, error) {
+func (r *Repository) FindByID(id int) (*models.Member, error) {
 	m := &models.Member{}
 	var phone, address sql.NullString
 	query := `SELECT id, member_code, name, email, password, phone, member_type, address, is_active, created_at, updated_at 
-			  FROM members WHERE id = ?`
+              FROM members WHERE id = ?`
 
 	err := r.db.QueryRow(query, id).Scan(
 		&m.ID, &m.MemberCode, &m.Name, &m.Email, &m.Password,
@@ -85,11 +85,11 @@ func (r *MemberRepository) FindByID(id int) (*models.Member, error) {
 	return m, nil
 }
 
-func (r *MemberRepository) FindByEmail(email string) (*models.Member, error) {
+func (r *Repository) FindByEmail(email string) (*models.Member, error) {
 	m := &models.Member{}
 	var phone, address sql.NullString
 	query := `SELECT id, member_code, name, email, password, phone, member_type, address, is_active, created_at, updated_at 
-			  FROM members WHERE email = ?`
+              FROM members WHERE email = ?`
 
 	err := r.db.QueryRow(query, email).Scan(
 		&m.ID, &m.MemberCode, &m.Name, &m.Email, &m.Password,
@@ -103,7 +103,7 @@ func (r *MemberRepository) FindByEmail(email string) (*models.Member, error) {
 	return m, nil
 }
 
-func (r *MemberRepository) GenerateMemberCode(memberType string) (string, error) {
+func (r *Repository) GenerateMemberCode(memberType string) (string, error) {
 	prefix := "MBR"
 	switch memberType {
 	case "mahasiswa":
@@ -124,9 +124,9 @@ func (r *MemberRepository) GenerateMemberCode(memberType string) (string, error)
 	return fmt.Sprintf("%s%03d", prefix, count+1), nil
 }
 
-func (r *MemberRepository) Create(m *models.MemberCreate, hashedPassword, memberCode string) (int64, error) {
+func (r *Repository) Create(m *models.MemberCreate, hashedPassword, memberCode string) (int64, error) {
 	query := `INSERT INTO members (member_code, name, email, password, phone, member_type, address) 
-			  VALUES (?, ?, ?, ?, ?, ?, ?)`
+              VALUES (?, ?, ?, ?, ?, ?, ?)`
 
 	result, err := r.db.Exec(query, memberCode, m.Name, m.Email, hashedPassword, m.Phone, m.MemberType, m.Address)
 	if err != nil {
@@ -135,18 +135,18 @@ func (r *MemberRepository) Create(m *models.MemberCreate, hashedPassword, member
 	return result.LastInsertId()
 }
 
-func (r *MemberRepository) Update(id int, m *models.MemberUpdate) error {
+func (r *Repository) Update(id int, m *models.MemberUpdate) error {
 	query := `UPDATE members SET name = ?, email = ?, phone = ?, member_type = ?, address = ?, is_active = ? WHERE id = ?`
 	_, err := r.db.Exec(query, m.Name, m.Email, m.Phone, m.MemberType, m.Address, m.IsActive, id)
 	return err
 }
 
-func (r *MemberRepository) Delete(id int) error {
+func (r *Repository) Delete(id int) error {
 	_, err := r.db.Exec(`DELETE FROM members WHERE id = ?`, id)
 	return err
 }
 
-func (r *MemberRepository) Count() (int, error) {
+func (r *Repository) Count() (int, error) {
 	var count int
 	err := r.db.QueryRow(`SELECT COUNT(*) FROM members WHERE is_active = TRUE`).Scan(&count)
 	return count, err

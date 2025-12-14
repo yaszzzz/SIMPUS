@@ -1,4 +1,4 @@
-package handlers
+package books
 
 import (
 	"html/template"
@@ -8,18 +8,17 @@ import (
 
 	"simpus/internal/middleware"
 	"simpus/internal/models"
-	"simpus/internal/services"
 )
 
 type BookHandler struct {
-	bookService *services.BookService
-	templates   *template.Template
+	service   *Service
+	templates *template.Template
 }
 
-func NewBookHandler(bookService *services.BookService, templates *template.Template) *BookHandler {
+func NewBookHandler(service *Service, templates *template.Template) *BookHandler {
 	return &BookHandler{
-		bookService: bookService,
-		templates:   templates,
+		service:   service,
+		templates: templates,
 	}
 }
 
@@ -38,13 +37,13 @@ func (h *BookHandler) Index(w http.ResponseWriter, r *http.Request) {
 		Limit:      10,
 	}
 
-	books, total, err := h.bookService.GetBooks(filter)
+	books, total, err := h.service.GetBooks(filter)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	categories, _ := h.bookService.GetCategories()
+	categories, _ := h.service.GetCategories()
 
 	totalPages := (total + filter.Limit - 1) / filter.Limit
 
@@ -72,8 +71,8 @@ func (h *BookHandler) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BookHandler) Create(w http.ResponseWriter, r *http.Request) {
-	categories, _ := h.bookService.GetCategories()
-	authors, _ := h.bookService.GetAuthors()
+	categories, _ := h.service.GetCategories()
+	authors, _ := h.service.GetAuthors()
 
 	claims := middleware.GetUserFromContext(r.Context())
 
@@ -114,7 +113,7 @@ func (h *BookHandler) Store(w http.ResponseWriter, r *http.Request) {
 		Description: r.FormValue("description"),
 	}
 
-	_, err := h.bookService.CreateBook(data)
+	_, err := h.service.CreateBook(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -131,14 +130,14 @@ func (h *BookHandler) Store(w http.ResponseWriter, r *http.Request) {
 func (h *BookHandler) Edit(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.PathValue("id"))
 
-	book, err := h.bookService.GetBook(id)
+	book, err := h.service.GetBook(id)
 	if err != nil {
 		http.Error(w, "Buku tidak ditemukan", http.StatusNotFound)
 		return
 	}
 
-	categories, _ := h.bookService.GetCategories()
-	authors, _ := h.bookService.GetAuthors()
+	categories, _ := h.service.GetCategories()
+	authors, _ := h.service.GetAuthors()
 
 	claims := middleware.GetUserFromContext(r.Context())
 
@@ -182,7 +181,7 @@ func (h *BookHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Description: r.FormValue("description"),
 	}
 
-	err := h.bookService.UpdateBook(id, data)
+	err := h.service.UpdateBook(id, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -199,7 +198,7 @@ func (h *BookHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *BookHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.PathValue("id"))
 
-	err := h.bookService.DeleteBook(id)
+	err := h.service.DeleteBook(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

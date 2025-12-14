@@ -1,4 +1,4 @@
-package services
+package auth
 
 import (
 	"errors"
@@ -6,20 +6,23 @@ import (
 
 	"simpus/config"
 	"simpus/internal/models"
-	"simpus/internal/repository"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type AuthService struct {
-	userRepo   *repository.UserRepository
-	memberRepo *repository.MemberRepository
+type MemberRepository interface {
+	FindByEmail(email string) (*models.Member, error)
+}
+
+type Service struct {
+	userRepo   *Repository
+	memberRepo MemberRepository
 	config     *config.Config
 }
 
-func NewAuthService(userRepo *repository.UserRepository, memberRepo *repository.MemberRepository, cfg *config.Config) *AuthService {
-	return &AuthService{
+func NewService(userRepo *Repository, memberRepo MemberRepository, cfg *config.Config) *Service {
+	return &Service{
 		userRepo:   userRepo,
 		memberRepo: memberRepo,
 		config:     cfg,
@@ -34,7 +37,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (s *AuthService) LoginAdmin(username, password string) (*models.User, string, error) {
+func (s *Service) LoginAdmin(username, password string) (*models.User, string, error) {
 	user, err := s.userRepo.FindByUsername(username)
 	if err != nil {
 		return nil, "", errors.New("username atau password salah")
@@ -56,7 +59,7 @@ func (s *AuthService) LoginAdmin(username, password string) (*models.User, strin
 	return user, token, nil
 }
 
-func (s *AuthService) LoginMember(email, password string) (*models.Member, string, error) {
+func (s *Service) LoginMember(email, password string) (*models.Member, string, error) {
 	member, err := s.memberRepo.FindByEmail(email)
 	if err != nil {
 		return nil, "", errors.New("email atau password salah")
@@ -78,7 +81,7 @@ func (s *AuthService) LoginMember(email, password string) (*models.Member, strin
 	return member, token, nil
 }
 
-func (s *AuthService) generateToken(userID int, username, role, userType string) (string, error) {
+func (s *Service) generateToken(userID int, username, role, userType string) (string, error) {
 	claims := &Claims{
 		UserID:   userID,
 		Username: username,
@@ -94,7 +97,7 @@ func (s *AuthService) generateToken(userID int, username, role, userType string)
 	return token.SignedString([]byte(s.config.JWT.Secret))
 }
 
-func (s *AuthService) ValidateToken(tokenString string) (*Claims, error) {
+func (s *Service) ValidateToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(s.config.JWT.Secret), nil
 	})
@@ -110,7 +113,7 @@ func (s *AuthService) ValidateToken(tokenString string) (*Claims, error) {
 	return nil, errors.New("invalid token")
 }
 
-func (s *AuthService) HashPassword(password string) (string, error) {
+func (s *Service) HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }

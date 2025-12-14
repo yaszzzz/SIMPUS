@@ -1,4 +1,4 @@
-package handlers
+package books
 
 import (
 	"html/template"
@@ -8,23 +8,22 @@ import (
 
 	"simpus/internal/middleware"
 	"simpus/internal/models"
-	"simpus/internal/services"
 )
 
 type CategoryHandler struct {
-	bookService *services.BookService
-	templates   *template.Template
+	service   *Service
+	templates *template.Template
 }
 
-func NewCategoryHandler(bookService *services.BookService, templates *template.Template) *CategoryHandler {
+func NewCategoryHandler(service *Service, templates *template.Template) *CategoryHandler {
 	return &CategoryHandler{
-		bookService: bookService,
-		templates:   templates,
+		service:   service,
+		templates: templates,
 	}
 }
 
 func (h *CategoryHandler) Index(w http.ResponseWriter, r *http.Request) {
-	categories, err := h.bookService.GetCategories()
+	categories, err := h.service.GetCategories()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -57,7 +56,7 @@ func (h *CategoryHandler) Store(w http.ResponseWriter, r *http.Request) {
 		Description: r.FormValue("description"),
 	}
 
-	_, err := h.bookService.CreateCategory(data)
+	_, err := h.service.CreateCategory(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -85,7 +84,7 @@ func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Description: r.FormValue("description"),
 	}
 
-	err := h.bookService.UpdateCategory(id, data)
+	err := h.service.UpdateCategory(id, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -102,7 +101,7 @@ func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.PathValue("id"))
 
-	err := h.bookService.DeleteCategory(id)
+	err := h.service.DeleteCategory(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

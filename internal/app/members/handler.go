@@ -1,4 +1,4 @@
-package handlers
+package members
 
 import (
 	"html/template"
@@ -8,29 +8,28 @@ import (
 
 	"simpus/internal/middleware"
 	"simpus/internal/models"
-	"simpus/internal/services"
 )
 
-type MemberHandler struct {
-	memberService *services.MemberService
-	templates     *template.Template
+type Handler struct {
+	service   *Service
+	templates *template.Template
 }
 
-func NewMemberHandler(memberService *services.MemberService, templates *template.Template) *MemberHandler {
-	return &MemberHandler{
-		memberService: memberService,
-		templates:     templates,
+func NewHandler(service *Service, templates *template.Template) *Handler {
+	return &Handler{
+		service:   service,
+		templates: templates,
 	}
 }
 
-func (h *MemberHandler) Index(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	if page < 1 {
 		page = 1
 	}
 	search := r.URL.Query().Get("search")
 
-	members, total, err := h.memberService.GetMembers(page, 10, search)
+	members, total, err := h.service.GetMembers(page, 10, search)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -58,7 +57,7 @@ func (h *MemberHandler) Index(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "admin/members/index.html", data)
 }
 
-func (h *MemberHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	claims := middleware.GetUserFromContext(r.Context())
 
 	data := map[string]interface{}{
@@ -74,7 +73,7 @@ func (h *MemberHandler) Create(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "admin/members/create.html", data)
 }
 
-func (h *MemberHandler) Store(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Store(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Form tidak valid", http.StatusBadRequest)
 		return
@@ -89,7 +88,7 @@ func (h *MemberHandler) Store(w http.ResponseWriter, r *http.Request) {
 		Address:    r.FormValue("address"),
 	}
 
-	_, err := h.memberService.CreateMember(data)
+	_, err := h.service.CreateMember(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -103,10 +102,10 @@ func (h *MemberHandler) Store(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/members", http.StatusSeeOther)
 }
 
-func (h *MemberHandler) Edit(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.PathValue("id"))
 
-	member, err := h.memberService.GetMember(id)
+	member, err := h.service.GetMember(id)
 	if err != nil {
 		http.Error(w, "Anggota tidak ditemukan", http.StatusNotFound)
 		return
@@ -128,7 +127,7 @@ func (h *MemberHandler) Edit(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "admin/members/edit.html", data)
 }
 
-func (h *MemberHandler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.PathValue("id"))
 
 	if err := r.ParseForm(); err != nil {
@@ -147,7 +146,7 @@ func (h *MemberHandler) Update(w http.ResponseWriter, r *http.Request) {
 		IsActive:   isActive,
 	}
 
-	err := h.memberService.UpdateMember(id, data)
+	err := h.service.UpdateMember(id, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -161,10 +160,10 @@ func (h *MemberHandler) Update(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/members", http.StatusSeeOther)
 }
 
-func (h *MemberHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.PathValue("id"))
 
-	err := h.memberService.DeleteMember(id)
+	err := h.service.DeleteMember(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -178,7 +177,7 @@ func (h *MemberHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/members", http.StatusSeeOther)
 }
 
-func (h *MemberHandler) render(w http.ResponseWriter, name string, data interface{}) {
+func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
 	tmpl, err := template.ParseFiles(
 		filepath.Join("templates", "layouts", "admin.html"),
 		filepath.Join("templates", "components", "sidebar.html"),
@@ -195,7 +194,7 @@ func (h *MemberHandler) render(w http.ResponseWriter, name string, data interfac
 	}
 }
 
-func (h *MemberHandler) renderPartial(w http.ResponseWriter, name string, data interface{}) {
+func (h *Handler) renderPartial(w http.ResponseWriter, name string, data interface{}) {
 	tmpl, err := template.ParseFiles(filepath.Join("templates", name))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

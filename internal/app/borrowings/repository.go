@@ -1,4 +1,4 @@
-package repository
+package borrowings
 
 import (
 	"database/sql"
@@ -6,15 +6,15 @@ import (
 	"time"
 )
 
-type BorrowingRepository struct {
+type Repository struct {
 	db *sql.DB
 }
 
-func NewBorrowingRepository(db *sql.DB) *BorrowingRepository {
-	return &BorrowingRepository{db: db}
+func NewRepository(db *sql.DB) *Repository {
+	return &Repository{db: db}
 }
 
-func (r *BorrowingRepository) FindAll(filter models.BorrowingFilter) ([]models.Borrowing, int, error) {
+func (r *Repository) FindAll(filter models.BorrowingFilter) ([]models.Borrowing, int, error) {
 	if filter.Page < 1 {
 		filter.Page = 1
 	}
@@ -131,7 +131,7 @@ func (r *BorrowingRepository) FindAll(filter models.BorrowingFilter) ([]models.B
 	return borrowings, total, nil
 }
 
-func (r *BorrowingRepository) FindByID(id int) (*models.Borrowing, error) {
+func (r *Repository) FindByID(id int) (*models.Borrowing, error) {
 	br := &models.Borrowing{}
 	var userID sql.NullInt64
 	var returnDate sql.NullTime
@@ -160,7 +160,7 @@ func (r *BorrowingRepository) FindByID(id int) (*models.Borrowing, error) {
 	return br, nil
 }
 
-func (r *BorrowingRepository) Create(br *models.BorrowingCreate, userID int, dueDate time.Time) (int64, error) {
+func (r *Repository) Create(br *models.BorrowingCreate, userID int, dueDate time.Time) (int64, error) {
 	query := `INSERT INTO borrowings (member_id, book_id, user_id, borrow_date, due_date, status, notes) 
 			  VALUES (?, ?, ?, CURDATE(), ?, 'dipinjam', ?)`
 
@@ -171,7 +171,7 @@ func (r *BorrowingRepository) Create(br *models.BorrowingCreate, userID int, due
 	return result.LastInsertId()
 }
 
-func (r *BorrowingRepository) Return(id int, returnData *models.BorrowingReturn) error {
+func (r *Repository) Return(id int, returnData *models.BorrowingReturn) error {
 	status := "dikembalikan"
 	if returnData.Fine > 0 {
 		status = "terlambat"
@@ -182,19 +182,19 @@ func (r *BorrowingRepository) Return(id int, returnData *models.BorrowingReturn)
 	return err
 }
 
-func (r *BorrowingRepository) CountActive() (int, error) {
+func (r *Repository) CountActive() (int, error) {
 	var count int
 	err := r.db.QueryRow(`SELECT COUNT(*) FROM borrowings WHERE status = 'dipinjam'`).Scan(&count)
 	return count, err
 }
 
-func (r *BorrowingRepository) CountOverdue() (int, error) {
+func (r *Repository) CountOverdue() (int, error) {
 	var count int
 	err := r.db.QueryRow(`SELECT COUNT(*) FROM borrowings WHERE status = 'dipinjam' AND due_date < CURDATE()`).Scan(&count)
 	return count, err
 }
 
-func (r *BorrowingRepository) FindOverdue() ([]models.Borrowing, error) {
+func (r *Repository) FindOverdue() ([]models.Borrowing, error) {
 	query := `SELECT br.id, br.member_id, br.book_id, br.borrow_date, br.due_date, br.status,
 			  m.id, m.member_code, m.name, m.email,
 			  b.id, b.title
@@ -242,7 +242,7 @@ func (r *BorrowingRepository) FindOverdue() ([]models.Borrowing, error) {
 	return borrowings, nil
 }
 
-func (r *BorrowingRepository) GetMemberBorrowings(memberID int) ([]models.Borrowing, error) {
+func (r *Repository) GetMemberBorrowings(memberID int) ([]models.Borrowing, error) {
 	filter := models.BorrowingFilter{
 		MemberID: memberID,
 		Page:     1,

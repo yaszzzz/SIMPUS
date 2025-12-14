@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"simpus/internal/services"
+	"simpus/internal/app/auth"
 )
 
 type contextKey string
@@ -12,10 +12,10 @@ type contextKey string
 const UserContextKey contextKey = "user"
 
 type AuthMiddleware struct {
-	authService *services.AuthService
+	authService *auth.Service
 }
 
-func NewAuthMiddleware(authService *services.AuthService) *AuthMiddleware {
+func NewAuthMiddleware(authService *auth.Service) *AuthMiddleware {
 	return &AuthMiddleware{authService: authService}
 }
 
@@ -60,8 +60,8 @@ func (m *AuthMiddleware) RequireMember(next http.Handler) http.Handler {
 	})
 }
 
-func GetUserFromContext(ctx context.Context) *services.Claims {
-	claims, ok := ctx.Value(UserContextKey).(*services.Claims)
+func GetUserFromContext(ctx context.Context) *auth.Claims {
+	claims, ok := ctx.Value(UserContextKey).(*auth.Claims)
 	if !ok {
 		return nil
 	}
