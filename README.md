@@ -25,6 +25,15 @@ Sistem manajemen perpustakaan modern dengan Go, MySQL, HTMX, dan JWT authenticat
 - **Authentication**: JWT (JSON Web Token)
 - **Styling**: Vanilla CSS dengan design system modern
 
+## Arsitektur
+
+Project ini menggunakan **Modular / Vertical Slice Architecture** untuk meningkatkan skalabilitas dan kemudahan maintenance. Setiap fitur utama dikelompokkan dalam folder tersendiri di dalam `internal/app/`, yang mencakup:
+- **Handler**: Logic HTTP dan rendering response.
+- **Service**: Business logic dan use case.
+- **Repository**: Akses database dan query.
+
+Struktur ini memungkinkan pengembangan fitur secara terisolasi dan mengurangi coupling antar modul.
+
 ## Instalasi
 
 ### Prasyarat
@@ -93,11 +102,16 @@ SIMPUS/
 │   ├── connection.go        # DB connection
 │   └── migrations/          # SQL schema
 ├── internal/
-│   ├── handlers/            # HTTP handlers
-│   ├── middleware/          # Auth middleware
-│   ├── models/              # Data models
-│   ├── repository/          # Database operations
-│   └── services/            # Business logic
+│   ├── app/                 # Feature Modules (Vertical Slices)
+│   │   ├── auth/            # Authentication
+│   │   ├── books/           # Book Management
+│   │   ├── members/         # Member Management
+│   │   ├── borrowings/      # Borrowing Transactions
+│   │   ├── notifications/   # Notifications
+│   │   ├── dashboard/       # Dashboard Logic
+│   │   └── reports/         # Reporting Logic
+│   ├── middleware/          # Shared Middleware
+│   └── models/              # Shared Data Models
 ├── static/
 │   ├── css/style.css        # Styling
 │   └── js/htmx.min.js       # HTMX library
