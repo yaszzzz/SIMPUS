@@ -147,7 +147,7 @@ func (s *Service) CheckAndCreateOverdueNotifications() (int, error) {
 
 	count := 0
 	for _, br := range overdue {
-		days := int(math.Ceil(time.Now().Sub(br.DueDate).Hours() / 24))
+		days := int(math.Ceil(time.Since(br.DueDate).Hours() / 24))
 		fine := float64(days) * models.FinePerDay
 
 		notif := &models.NotificationCreate{

@@ -100,7 +100,13 @@ func (h *Handler) setTokenCookie(w http.ResponseWriter, token string) {
 }
 
 func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
-	tmpl, err := template.ParseFiles(
+	tmpl, err := h.templates.Clone()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err = tmpl.ParseFiles(
 		filepath.Join("templates", "layouts", "auth.html"),
 		filepath.Join("templates", name),
 	)

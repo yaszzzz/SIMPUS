@@ -213,7 +213,13 @@ func (h *BookHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BookHandler) render(w http.ResponseWriter, name string, data interface{}) {
-	tmpl, err := template.ParseFiles(
+	tmpl, err := h.templates.Clone()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err = tmpl.ParseFiles(
 		filepath.Join("templates", "layouts", "admin.html"),
 		filepath.Join("templates", "components", "sidebar.html"),
 		filepath.Join("templates", "components", "navbar.html"),
@@ -230,7 +236,13 @@ func (h *BookHandler) render(w http.ResponseWriter, name string, data interface{
 }
 
 func (h *BookHandler) renderPartial(w http.ResponseWriter, name string, data interface{}) {
-	tmpl, err := template.ParseFiles(filepath.Join("templates", name))
+	tmpl, err := h.templates.Clone()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err = tmpl.ParseFiles(filepath.Join("templates", name))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

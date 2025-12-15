@@ -79,7 +79,13 @@ func (h *Handler) MemberDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
-	tmpl, err := template.ParseFiles(
+	tmpl, err := h.templates.Clone()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err = tmpl.ParseFiles(
 		filepath.Join("templates", "layouts", "admin.html"),
 		filepath.Join("templates", "components", "sidebar.html"),
 		filepath.Join("templates", "components", "navbar.html"),
