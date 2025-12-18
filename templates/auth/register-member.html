@@ -1,80 +1,694 @@
 {{define "content"}}
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --primary-light: #60a5fa;
+        --secondary: #7c3aed;
+        --accent: #f59e0b;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f97316;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-900: #111827;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .auth-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #ecf0ff 0%, #dbeafe 50%, #e0f2fe 100%);
+        padding: 40px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Background decoration */
+    .auth-container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 30% 50%, rgba(37, 99, 235, 0.15) 0%, transparent 50%);
+        pointer-events: none;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .auth-container::after {
+        content: '';
+        position: absolute;
+        bottom: -50%;
+        left: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 70% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+        pointer-events: none;
+        animation: float 25s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(30px, 30px); }
+    }
+
+    .auth-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        max-width: 1000px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* LEFT SIDE - INFO */
+    .auth-header {
+        background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+        padding: 60px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .auth-header-content {
+        position: relative;
+        z-index: 2;
+        animation: fadeInLeft 0.8s ease-out;
+    }
+
+    @keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .auth-logo {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+        color: white;
+        font-size: 32px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .auth-logo svg {
+        width: 36px;
+        height: 36px;
+        stroke-width: 2;
+    }
+
+    .auth-title {
+        font-size: 32px;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 12px;
+        letter-spacing: -0.5px;
+    }
+
+    .auth-subtitle {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 40px;
+        line-height: 1.5;
+    }
+
+    .info-features {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .feature-item {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        animation: fadeInLeft 0.8s ease-out;
+    }
+
+    .feature-item:nth-child(1) { animation-delay: 0.1s; }
+    .feature-item:nth-child(2) { animation-delay: 0.2s; }
+    .feature-item:nth-child(3) { animation-delay: 0.3s; }
+    .feature-item:nth-child(4) { animation-delay: 0.4s; }
+
+    .feature-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        flex-shrink: 0;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .feature-text {
+        flex: 1;
+    }
+
+    .feature-text h4 {
+        font-size: 15px;
+        color: white;
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+
+    .feature-text p {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.4;
+    }
+
+    /* RIGHT SIDE - FORM */
+    .auth-form-wrapper {
+        padding: 60px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        animation: fadeInRight 0.8s ease-out;
+    }
+
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .form-header {
+        margin-bottom: 35px;
+    }
+
+    .form-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 8px;
+    }
+
+    .form-header p {
+        font-size: 14px;
+        color: var(--gray-500);
+    }
+
+    .alert {
+        padding: 14px 16px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        font-size: 14px;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert svg {
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        border-left: 4px solid var(--danger);
+    }
+
+    .alert-error svg {
+        color: var(--danger);
+    }
+
+    .alert-success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+        border-left: 4px solid var(--success);
+    }
+
+    .alert-success svg {
+        color: var(--success);
+    }
+
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.05s; }
+    .form-group:nth-child(2) { animation-delay: 0.1s; }
+    .form-group:nth-child(3) { animation-delay: 0.15s; }
+    .form-group:nth-child(4) { animation-delay: 0.2s; }
+    .form-group:nth-child(5) { animation-delay: 0.25s; }
+    .form-group:nth-child(6) { animation-delay: 0.3s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--gray-700);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-label .required {
+        color: var(--danger);
+    }
+
+    .form-control {
+        padding: 12px 14px;
+        border: 2px solid var(--gray-200);
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        background: white;
+        color: var(--gray-900);
+    }
+
+    .form-control::placeholder {
+        color: var(--gray-400);
+    }
+
+    .form-control:hover {
+        border-color: var(--gray-300);
+        background: var(--gray-50);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        transform: translateY(-2px);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+        line-height: 1.5;
+    }
+
+    select.form-control {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 20px;
+        padding-right: 36px;
+    }
+
+    .form-control:disabled {
+        background: var(--gray-100);
+        color: var(--gray-500);
+        cursor: not-allowed;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        color: white;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: left 0.5s ease;
+        z-index: 0;
+    }
+
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .auth-footer {
+        margin-top: 25px;
+        padding-top: 25px;
+        border-top: 1px solid var(--gray-200);
+        text-align: center;
+    }
+
+    .auth-footer p {
+        font-size: 14px;
+        color: var(--gray-600);
+    }
+
+    .auth-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .auth-footer a:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .auth-card {
+            grid-template-columns: 1fr;
+        }
+
+        .auth-header {
+            padding: 40px 30px;
+            order: 2;
+        }
+
+        .auth-form-wrapper {
+            padding: 40px 30px;
+            order: 1;
+        }
+
+        .auth-title {
+            font-size: 26px;
+        }
+
+        .auth-header h3 {
+            font-size: 20px;
+        }
+
+        .form-header h2 {
+            font-size: 22px;
+        }
+
+        .info-features {
+            gap: 16px;
+        }
+
+        .feature-item {
+            gap: 12px;
+        }
+
+        .feature-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .auth-container {
+            padding: 20px 15px;
+        }
+
+        .auth-card {
+            border-radius: 16px;
+        }
+
+        .auth-header,
+        .auth-form-wrapper {
+            padding: 30px 20px;
+        }
+
+        .auth-title {
+            font-size: 24px;
+        }
+
+        .form-header h2 {
+            font-size: 20px;
+        }
+
+        .btn {
+            padding: 11px 20px;
+            font-size: 14px;
+        }
+    }
+</style>
+
 <div class="auth-container">
     <div class="auth-card">
+        <!-- LEFT SIDE - INFO -->
         <div class="auth-header">
-            <div class="auth-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
+            <div class="auth-header-content">
+                <div class="auth-logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17s4.5 10.747 10 10.747c5.5 0 10-4.998 10-10.747S17.5 6.253 12 6.253z" />
+                    </svg>
+                </div>
+                <h1 class="auth-title">SIMPUS</h1>
+                <p class="auth-subtitle">Sistem Informasi Manajemen Perpustakaan</p>
+                
+                <div class="info-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-text">
+                            <h4>Akses Perpustakaan Digital</h4>
+                            <p>Jelajahi ribuan koleksi buku elektronik dan jurnal referensi berkualitas</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📖</div>
+                        <div class="feature-text">
+                            <h4>Kelola Peminjaman Buku</h4>
+                            <p>Pinjam dan kembalikan buku dengan mudah melalui satu platform terpadu</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔔</div>
+                        <div class="feature-text">
+                            <h4>Notifikasi Keterlambatan</h4>
+                            <p>Dapatkan pemberitahuan real-time untuk deadline pengembalian buku</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h1 class="auth-title">SIMPUS</h1>
-            <p class="auth-subtitle">Registrasi Anggota Baru</p>
         </div>
 
-        {{if .Error}}
-        <div class="alert alert-error">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20"
-                height="20">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {{.Error}}
-        </div>
-        {{end}}
-
-        <form class="auth-form" action="/register" method="POST">
-            <div class="form-group">
-                <label class="form-label" for="name">Nama Lengkap</label>
-                <input type="text" id="name" name="name" class="form-control" placeholder="Masukkan nama lengkap"
-                    required autofocus>
+        <!-- RIGHT SIDE - FORM -->
+        <div class="auth-form-wrapper">
+            <div class="form-header">
+                <h2>Registrasi Akun</h2>
+                <p>Buat akun baru untuk mengakses layanan SIMPUS</p>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="email">Email</label>
-                <input type="email" id="email" name="email" class="form-control" placeholder="Masukkan email" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="phone">Nomor Telepon</label>
-                <input type="tel" id="phone" name="phone" class="form-control" placeholder="Masukkan nomor telepon"
-                    required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="member_type">Tipe Anggota</label>
-                <select id="member_type" name="member_type" class="form-control">
-                    <option value="mahasiswa">Mahasiswa</option>
-                    <option value="guru">Guru</option>
-                    <option value="karyawan">Karyawan</option>
-                    <option value="umum">Umum</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="address">Alamat</label>
-                <textarea id="address" name="address" class="form-control" placeholder="Masukkan alamat lengkap"
-                    rows="2" required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="Buat password"
-                    required>
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20"
-                    height="20">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            {{if .Error}}
+            <div class="alert alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Daftar Sekarang
-            </button>
-        </form>
+                <span>{{.Error}}</span>
+            </div>
+            {{end}}
 
-        <div class="auth-footer">
-            <p>Sudah punya akun? <a href="/login/member">Login di sini</a></p>
+            <form class="auth-form" action="/register" method="POST">
+                <div class="form-group">
+                    <label class="form-label" for="name">
+                        Nama Lengkap
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" id="name" name="name" class="form-control" 
+                        placeholder="Masukkan nama lengkap Anda" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">
+                        Email
+                        <span class="required">*</span>
+                    </label>
+                    <input type="email" id="email" name="email" class="form-control" 
+                        placeholder="nama@contoh.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="phone">
+                        Nomor Telepon
+                        <span class="required">*</span>
+                    </label>
+                    <input type="tel" id="phone" name="phone" class="form-control" 
+                        placeholder="0812-3456-7890" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="member_type">
+                        Tipe Anggota
+                        <span class="required">*</span>
+                    </label>
+                    <select id="member_type" name="member_type" class="form-control" required>
+                        <option value="">Pilih tipe anggota</option>
+                        <option value="mahasiswa">Mahasiswa</option>
+                        <option value="guru">Guru</option>
+                        <option value="karyawan">Karyawan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="address">
+                        Alamat
+                        <span class="required">*</span>
+                    </label>
+                    <textarea id="address" name="address" class="form-control" 
+                        placeholder="Masukkan alamat lengkap Anda" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">
+                        Password
+                        <span class="required">*</span>
+                    </label>
+                    <input type="password" id="password" name="password" class="form-control" 
+                        placeholder="Minimal 8 karakter" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    Daftar Sekarang
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Sudah punya akun? <a href="/login/member">Login di sini</a></p>
+            </div>
         </div>
     </div>
 </div>
