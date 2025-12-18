@@ -26,9 +26,10 @@
 
 <body>
     <div class="app-container">
+        {{template "member-sidebar" .}}
         <div class="main-content">
-            {{template "member-navbar" .}}
-            <div class="member-container">
+            {{template "member-header" .}}
+            <div class="page-content">
                 {{template "content" .}}
             </div>
         </div>

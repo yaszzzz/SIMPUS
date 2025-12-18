@@ -1,0 +1,24 @@
+{{define "member-header"}}
+<header class="navbar">
+    <div class="navbar-left">
+        <button type="button" class="btn-icon sidebar-toggle d-lg-none">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+        <h2 class="page-title d-none d-lg-block">{{.Title}}</h2>
+    </div>
+
+    <div class="navbar-right">
+        <div class="user-menu border-start ps-3 ms-2">
+            <div class="user-avatar text-white bg-primary">
+                {{if .User}}{{slice .User.Name 0 1 | upper}}{{else}}M{{end}}
+            </div>
+            <div class="user-info">
+                <span class="user-name">{{if .User}}{{.User.Name}}{{else}}Member{{end}}</span>
+                <span class="user-role">{{if .User}}{{.User.MemberCode}}{{else}}Anggota{{end}}</span>
+            </div>
+        </div>
+    </div>
+</header>
+{{end}}

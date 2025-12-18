@@ -135,7 +135,9 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tmpl.Execute(w, nil)
+		if err := tmpl.ExecuteTemplate(w, "home.html", nil); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 	r.Get("/login", authHandler.LoginPage)
 	r.Post("/login", authHandler.Login)

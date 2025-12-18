@@ -60,14 +60,7 @@ func (h *Handler) MemberDashboard(w http.ResponseWriter, r *http.Request) {
 	claims := middleware.GetUserFromContext(r.Context())
 
 	// Get member borrowings
-	// Assuming claims.UserID maps to member ID for member users
-	// But in auth service, token for member uses MemberID as UserID claim
 	borrowings, _ := h.borrowService.GetMemberBorrowings(claims.UserID)
-
-	// Get notifications
-	// We don't have notification service here?
-	// Dashboard Handler usually composites data.
-	// For now let's just show borrowings. Future improvement: Add notifications.
 
 	data := map[string]interface{}{
 		"Title":      "Dashboard - SIMPUS",
@@ -75,7 +68,7 @@ func (h *Handler) MemberDashboard(w http.ResponseWriter, r *http.Request) {
 		"User":       claims,
 	}
 
-	h.render(w, "member/dashboard.html", data)
+	h.renderMember(w, "member/dashboard.html", data)
 }
 
 func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
@@ -97,6 +90,29 @@ func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
 	}
 
 	if err := tmpl.ExecuteTemplate(w, "admin.html", data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) renderMember(w http.ResponseWriter, name string, data interface{}) {
+	tmpl, err := h.templates.Clone()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err = tmpl.ParseFiles(
+		filepath.Join("templates", "layouts", "member.html"),
+		filepath.Join("templates", "components", "member-sidebar.html"),
+		filepath.Join("templates", "components", "member-header.html"),
+		filepath.Join("templates", name),
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "member.html", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

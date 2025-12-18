@@ -262,7 +262,8 @@ func (h *Handler) renderMember(w http.ResponseWriter, name string, data interfac
 
 	tmpl, err = tmpl.ParseFiles(
 		filepath.Join("templates", "layouts", "member.html"),
-		filepath.Join("templates", "components", "member_navbar.html"),
+		filepath.Join("templates", "components", "member-sidebar.html"),
+		filepath.Join("templates", "components", "member-header.html"),
 		filepath.Join("templates", name),
 	)
 	if err != nil {
