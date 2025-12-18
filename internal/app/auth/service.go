@@ -13,6 +13,8 @@ import (
 
 type MemberRepository interface {
 	FindByEmail(email string) (*models.Member, error)
+	GenerateMemberCode(memberType string) (string, error)
+	Create(m *models.MemberCreate, hashedPassword, memberCode string) (int64, error)
 }
 
 type Service struct {
@@ -79,6 +81,22 @@ func (s *Service) LoginMember(email, password string) (*models.Member, string, e
 	}
 
 	return member, token, nil
+}
+
+func (s *Service) RegisterMember(data *models.MemberCreate) (int64, error) {
+	// Generate member code
+	memberCode, err := s.memberRepo.GenerateMemberCode(data.MemberType)
+	if err != nil {
+		return 0, err
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return 0, err
+	}
+
+	return s.memberRepo.Create(data, string(hashedPassword), memberCode)
 }
 
 func (s *Service) generateToken(userID int, username, role, userType string) (string, error) {

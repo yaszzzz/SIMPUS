@@ -1,0 +1,164 @@
+{{define "content"}}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-gradient-primary text-white">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="fw-bold mb-2">Katalog Buku</h2>
+                        <p class="mb-0 text-white-50">Jelajahi koleksi buku perpustakaan kami</p>
+                    </div>
+                    <div class="col-md-4 text-end d-none d-md-block">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-books" width="64"
+                            height="64" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffffff" fill="none"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <rect x="5" y="4" width="4" height="16" rx="1" />
+                            <rect x="9" y="4" width="4" height="16" rx="1" />
+                            <path d="M5 8h4" />
+                            <path d="M9 16h4" />
+                            <rect x="13.5" y="4" width="4" height="16" rx="1" />
+                            <rect x="16.5" y="4" width="4" height="16" rx="1" />
+                            <path d="M13.5 8h4" />
+                            <path d="M16.5 16h4" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <form action="/member/books" method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label visually-hidden">Cari Buku</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search"
+                                    width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <circle cx="10" cy="10" r="7" />
+                                    <line x1="21" y1="21" x2="15" y2="15" />
+                                </svg>
+                            </span>
+                            <input type="text" class="form-control border-start-0 ps-0" id="search" name="search"
+                                placeholder="Cari judul, penulis, atau ISBN..." value="{{.Search}}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" name="category">
+                            <option value="0">Semua Kategori</option>
+                            {{range .Categories}}
+                            <option value="{{.ID}}" {{if eq .ID $.CategoryID}}selected{{end}}>{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            Terapkan Filter
+                        </button>
+                    </div>
+                    {{if or .Search (gt .CategoryID 0)}}
+                    <div class="col-md-2">
+                        <a href="/member/books" class="btn btn-outline-secondary w-100">Reset</a>
+                    </div>
+                    {{end}}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Book Grid -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
+    {{range .Books}}
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm hover-card">
+            <div class="position-relative">
+                {{if .Cover}}
+                <img src="/static/uploads/{{.Cover}}" class="card-img-top" alt="{{.Title}}"
+                    style="height: 300px; object-fit: cover;">
+                {{else}}
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-book" width="64"
+                        height="64" viewBox="0 0 24 24" stroke-width="1" stroke="#dee2e6" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                        <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                        <line x1="12" y1="6" x2="12" y2="19" />
+                        <line x1="21" y1="6" x2="21" y2="19" />
+                    </svg>
+                </div>
+                {{end}}
+                <span
+                    class="position-absolute top-0 end-0 badge {{if gt .Stock 0}}bg-success{{else}}bg-danger{{end}} m-2">
+                    {{if gt .Stock 0}}Tersedia: {{.Stock}}{{else}}Habis{{end}}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <span class="badge bg-light text-secondary border">{{.Category.Name}}</span>
+                </div>
+                <h5 class="card-title text-truncate" title="{{.Title}}">{{.Title}}</h5>
+                <p class="card-text text-muted small mb-1">{{.Author.Name}}</p>
+                <p class="card-text text-muted small">{{.Publisher}} ({{.PublishYear}})</p>
+            </div>
+            <div class="card-footer bg-white border-0 pt-0 pb-3">
+                <a href="/member/books/{{.ID}}" class="btn btn-outline-primary w-100 btn-sm">Lihat Detail</a>
+            </div>
+        </div>
+    </div>
+    {{else}}
+    <div class="col-12 text-center py-5">
+        <div class="text-muted">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-books-off" width="64"
+                height="64" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" fill="none"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                <line x1="12" y1="6" x2="12" y2="19" />
+                <line x1="21" y1="6" x2="21" y2="19" />
+            </svg>
+            <p class="mt-3">Tidak ada buku yang ditemukan.</p>
+        </div>
+    </div>
+    {{end}}
+</div>
+
+<!-- Pagination -->
+{{if gt .TotalPages 1}}
+<nav aria-label="Page navigation" class="mb-4">
+    <ul class="pagination justify-content-center">
+        <!-- Previous -->
+        <li class="page-item {{if eq .Page 1}}disabled{{end}}">
+            <a class="page-link"
+                href="/member/books?page={{subtract .Page 1}}&search={{.Search}}&category={{.CategoryID}}">Previous</a>
+        </li>
+
+        <!-- Page Numbers -->
+        {{$currentPage := .Page}}
+        {{$totalPages := .TotalPages}}
+        {{range $i := seq 1 $totalPages}}
+        <li class="page-item {{if eq $i $currentPage}}active{{end}}">
+            <a class="page-link"
+                href="/member/books?page={{$i}}&search={{$.Search}}&category={{$.CategoryID}}">{{$i}}</a>
+        </li>
+        {{end}}
+
+        <!-- Next -->
+        <li class="page-item {{if eq .Page .TotalPages}}disabled{{end}}">
+            <a class="page-link"
+                href="/member/books?page={{add .Page 1}}&search={{.Search}}&category={{.CategoryID}}">Next</a>
+        </li>
+    </ul>
+</nav>
+{{end}}
+{{end}}

@@ -131,6 +131,8 @@ func main() {
 	r.Get("/login/member", authHandler.MemberLoginPage)
 	r.Post("/login/member", authHandler.MemberLogin)
 	r.Get("/logout", authHandler.Logout)
+	r.Get("/register", authHandler.RegisterMemberPage)
+	r.Post("/register", authHandler.RegisterMember)
 
 	// Admin routes (protected)
 	r.Route("/admin", func(r chi.Router) {
@@ -184,6 +186,10 @@ func main() {
 		r.Use(authMw.RequireMember)
 
 		r.Get("/dashboard", dashboardHandler.MemberDashboard)
+
+		// Books
+		r.Get("/books", bookHandler.MemberIndex)
+		r.Get("/books/{id}", bookHandler.MemberShow)
 	})
 
 	// Start server

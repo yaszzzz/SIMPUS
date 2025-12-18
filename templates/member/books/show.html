@@ -1,0 +1,90 @@
+{{define "content"}}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/member/books">Katalog Buku</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{.Book.Title}}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="row g-0">
+        <!-- Book Cover -->
+        <div class="col-md-4 bg-light d-flex align-items-center justify-content-center p-4">
+            {{if .Book.Cover}}
+            <img src="/static/uploads/{{.Book.Cover}}" class="img-fluid rounded shadow" alt="{{.Book.Title}}"
+                style="max-height: 500px; width: auto;">
+            {{else}}
+            <div class="text-center text-muted">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-book" width="128"
+                    height="128" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                    <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                    <line x1="12" y1="6" x2="12" y2="19" />
+                    <line x1="21" y1="6" x2="21" y2="19" />
+                </svg>
+                <p class="mt-2">Tidak ada cover</p>
+            </div>
+            {{end}}
+        </div>
+
+        <!-- Book Details -->
+        <div class="col-md-8">
+            <div class="card-body p-4 p-lg-5">
+                <div class="mb-3">
+                    <span class="badge bg-primary">{{.Book.Category.Name}}</span>
+                    {{if gt .Book.Stock 0}}
+                    <span class="badge bg-success">Tersedia: {{.Book.Stock}}</span>
+                    {{else}}
+                    <span class="badge bg-danger">Habis</span>
+                    {{end}}
+                </div>
+
+                <h1 class="card-title fw-bold mb-3">{{.Book.Title}}</h1>
+
+                <h5 class="text-muted mb-4">karya {{.Book.Author.Name}}</h5>
+
+                <div class="row mb-4">
+                    <div class="col-sm-6">
+                        <p class="mb-1 text-muted small">Penerbit</p>
+                        <p class="fw-semibold">{{.Book.Publisher}}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="mb-1 text-muted small">Tahun Terbit</p>
+                        <p class="fw-semibold">{{.Book.PublishYear}}</p>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="fw-bold fs-6 text-uppercase text-muted mb-3">Sinopsis</h5>
+                    <p class="card-text text-secondary" style="line-height: 1.8;">
+                        {{if .Book.Description}}
+                        {{.Book.Description}}
+                        {{else}}
+                        <em class="text-muted">Tidak ada deskripsi untuk buku ini.</em>
+                        {{end}}
+                    </p>
+                </div>
+
+                <div class="d-grid d-md-flex gap-2">
+                    <a href="/member/books" class="btn btn-outline-secondary px-4">Kembali ke Katalog</a>
+                    {{if gt .Book.Stock 0}}
+                    <!-- Future Feature: Self Service Borrowing -->
+                    <!-- <button class="btn btn-primary px-4" disabled title="Hubungi petugas untuk meminjam">
+                        Minta Peminjaman
+                    </button> -->
+                    <div class="alert alert-info d-inline-block py-2 px-3 mb-0 fs-7">
+                        <small>💡 Hubungi petugas perpustakaan untuk meminjam buku ini.</small>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

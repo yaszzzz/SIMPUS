@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"simpus/internal/models"
 	"time"
 )
 
@@ -75,6 +76,43 @@ func (h *Handler) MemberLogin(w http.ResponseWriter, r *http.Request) {
 
 	_ = member // Can be used for logging
 	http.Redirect(w, r, "/member/dashboard", http.StatusSeeOther)
+}
+
+func (h *Handler) RegisterMemberPage(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{
+		"Title": "Registrasi Anggota - SIMPUS",
+		"Error": r.URL.Query().Get("error"),
+	}
+	h.render(w, "auth/register-member.html", data)
+}
+
+func (h *Handler) RegisterMember(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Redirect(w, r, "/register?error=Form tidak valid", http.StatusSeeOther)
+		return
+	}
+
+	data := &models.MemberCreate{
+		Name:       r.FormValue("name"),
+		Email:      r.FormValue("email"),
+		Password:   r.FormValue("password"),
+		Phone:      r.FormValue("phone"),
+		MemberType: r.FormValue("member_type"),
+		Address:    r.FormValue("address"),
+	}
+
+	if data.Name == "" || data.Email == "" || data.Password == "" {
+		http.Redirect(w, r, "/register?error=Data tidak lengkap", http.StatusSeeOther)
+		return
+	}
+
+	_, err := h.service.RegisterMember(data)
+	if err != nil {
+		http.Redirect(w, r, "/register?error="+err.Error(), http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, "/login/member?success=Registrasi berhasil, silakan login", http.StatusSeeOther)
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,81 @@
+{{define "content"}}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+            </div>
+            <h1 class="auth-title">SIMPUS</h1>
+            <p class="auth-subtitle">Registrasi Anggota Baru</p>
+        </div>
+
+        {{if .Error}}
+        <div class="alert alert-error">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20"
+                height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {{.Error}}
+        </div>
+        {{end}}
+
+        <form class="auth-form" action="/register" method="POST">
+            <div class="form-group">
+                <label class="form-label" for="name">Nama Lengkap</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Masukkan nama lengkap"
+                    required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Masukkan email" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="phone">Nomor Telepon</label>
+                <input type="tel" id="phone" name="phone" class="form-control" placeholder="Masukkan nomor telepon"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="member_type">Tipe Anggota</label>
+                <select id="member_type" name="member_type" class="form-control">
+                    <option value="mahasiswa">Mahasiswa</option>
+                    <option value="guru">Guru</option>
+                    <option value="karyawan">Karyawan</option>
+                    <option value="umum">Umum</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="address">Alamat</label>
+                <textarea id="address" name="address" class="form-control" placeholder="Masukkan alamat lengkap"
+                    rows="2" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Buat password"
+                    required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20"
+                    height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                Daftar Sekarang
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Sudah punya akun? <a href="/login/member">Login di sini</a></p>
+        </div>
+    </div>
+</div>
+{{end}}

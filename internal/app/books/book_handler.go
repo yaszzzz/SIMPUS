@@ -70,6 +70,48 @@ func (h *BookHandler) Index(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "admin/books/index.html", data)
 }
 
+func (h *BookHandler) MemberIndex(w http.ResponseWriter, r *http.Request) {
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	search := r.URL.Query().Get("search")
+	categoryID, _ := strconv.Atoi(r.URL.Query().Get("category"))
+
+	filter := models.BookFilter{
+		Search:     search,
+		CategoryID: categoryID,
+		Page:       page,
+		Limit:      12, // Grid view usually has more items
+	}
+
+	books, total, err := h.service.GetBooks(filter)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	categories, _ := h.service.GetCategories()
+
+	totalPages := (total + filter.Limit - 1) / filter.Limit
+
+	claims := middleware.GetUserFromContext(r.Context())
+
+	data := map[string]interface{}{
+		"Title":      "Katalog Buku - SIMPUS",
+		"Books":      books,
+		"Total":      total,
+		"Page":       page,
+		"TotalPages": totalPages,
+		"Search":     search,
+		"CategoryID": categoryID,
+		"Categories": categories,
+		"User":       claims,
+	}
+
+	h.renderMember(w, "member/books/index.html", data)
+}
+
 func (h *BookHandler) Create(w http.ResponseWriter, r *http.Request) {
 	categories, _ := h.service.GetCategories()
 	authors, _ := h.service.GetAuthors()
@@ -212,6 +254,26 @@ func (h *BookHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/books", http.StatusSeeOther)
 }
 
+func (h *BookHandler) MemberShow(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(r.PathValue("id"))
+
+	book, err := h.service.GetBook(id)
+	if err != nil {
+		http.Error(w, "Buku tidak ditemukan", http.StatusNotFound)
+		return
+	}
+
+	claims := middleware.GetUserFromContext(r.Context())
+
+	data := map[string]interface{}{
+		"Title": "Detail Buku - SIMPUS",
+		"Book":  book,
+		"User":  claims,
+	}
+
+	h.renderMember(w, "member/books/show.html", data)
+}
+
 func (h *BookHandler) render(w http.ResponseWriter, name string, data interface{}) {
 	tmpl, err := h.templates.Clone()
 	if err != nil {
@@ -231,6 +293,28 @@ func (h *BookHandler) render(w http.ResponseWriter, name string, data interface{
 	}
 
 	if err := tmpl.ExecuteTemplate(w, "admin.html", data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (h *BookHandler) renderMember(w http.ResponseWriter, name string, data interface{}) {
+	tmpl, err := h.templates.Clone()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err = tmpl.ParseFiles(
+		filepath.Join("templates", "layouts", "member.html"),
+		filepath.Join("templates", "components", "member_navbar.html"),
+		filepath.Join("templates", name),
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "member.html", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
