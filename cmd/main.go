@@ -124,21 +124,39 @@ func main() {
 	r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
 
 	// Public routes
+	// Homepage - versi debug untuk melihat error
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := templates.Clone()
+		log.Println("=== Homepage Request ===")
+		
+		// Cek apakah file exists
+		tmpl, err := template.ParseFiles("templates/home.html")
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("❌ Error parsing home template: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(fmt.Sprintf("Template Error: %v", err)))
 			return
 		}
-		tmpl, err = tmpl.ParseFiles("templates/home.html")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println("✅ Template parsed successfully")
+		
+		// Set header sebelum execute
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		
+		// Execute template
+		if err := tmpl.Execute(w, nil); err != nil {
+			log.Printf("❌ Error executing home template: %v", err)
+			w.Write([]byte(fmt.Sprintf("Execution Error: %v", err)))
 			return
 		}
+<<<<<<< HEAD
 		if err := tmpl.ExecuteTemplate(w, "home.html", nil); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+=======
+		log.Println("✅ Template executed successfully")
+>>>>>>> d1cbefeb407e53fdec068761bce09fda87753df4
 	})
+
+	// Auth routes
 	r.Get("/login", authHandler.LoginPage)
 	r.Post("/login", authHandler.Login)
 	r.Get("/login/member", authHandler.MemberLoginPage)

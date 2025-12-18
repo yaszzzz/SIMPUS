@@ -58,7 +58,7 @@ func Load() (*Config, error) {
 		},
 		Server: ServerConfig{
 			Host: getEnv("SERVER_HOST", "localhost"),
-			Port: getEnv("SERVER_PORT", "8080"),
+			Port: getEnv("SERVER_PORT", "8081"),
 		},
 		App: AppConfig{
 			Name: getEnv("APP_NAME", "SIMPUS"),
