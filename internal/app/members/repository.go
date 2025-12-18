@@ -136,6 +136,12 @@ func (r *Repository) Create(m *models.MemberCreate, hashedPassword, memberCode s
 }
 
 func (r *Repository) Update(id int, m *models.MemberUpdate) error {
+	if m.Password != "" {
+		query := `UPDATE members SET name = ?, email = ?, phone = ?, member_type = ?, address = ?, is_active = ?, password = ? WHERE id = ?`
+		_, err := r.db.Exec(query, m.Name, m.Email, m.Phone, m.MemberType, m.Address, m.IsActive, m.Password, id)
+		return err
+	}
+
 	query := `UPDATE members SET name = ?, email = ?, phone = ?, member_type = ?, address = ?, is_active = ? WHERE id = ?`
 	_, err := r.db.Exec(query, m.Name, m.Email, m.Phone, m.MemberType, m.Address, m.IsActive, id)
 	return err

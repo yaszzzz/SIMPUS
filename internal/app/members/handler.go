@@ -200,6 +200,76 @@ func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
 	}
 }
 
+func (h *Handler) Profile(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetUserFromContext(r.Context())
+	member, err := h.service.GetMember(claims.UserID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Title":   "Profil Anggota - SIMPUS",
+		"Member":  member,
+		"User":    claims,
+		"Error":   r.URL.Query().Get("error"),
+		"Success": r.URL.Query().Get("success"),
+	}
+
+	h.renderMember(w, "member/profile.html", data)
+}
+
+func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetUserFromContext(r.Context())
+
+	if err := r.ParseForm(); err != nil {
+		http.Redirect(w, r, "/member/profile?error=Form tidak valid", http.StatusSeeOther)
+		return
+	}
+
+	// Update fields
+	updateData := &models.MemberUpdate{
+		Name:    r.FormValue("name"),
+		Phone:   r.FormValue("phone"),
+		Address: r.FormValue("address"),
+	}
+
+	password := r.FormValue("password")
+	if password != "" {
+		updateData.Password = password
+	}
+
+	err := h.service.UpdateMember(claims.UserID, updateData)
+	if err != nil {
+		http.Redirect(w, r, "/member/profile?error="+err.Error(), http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, "/member/profile?success=Profil berhasil diperbarui", http.StatusSeeOther)
+}
+
+func (h *Handler) renderMember(w http.ResponseWriter, name string, data interface{}) {
+	tmpl, err := h.templates.Clone()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err = tmpl.ParseFiles(
+		filepath.Join("templates", "layouts", "member.html"),
+		filepath.Join("templates", "components", "member_navbar.html"),
+		filepath.Join("templates", name),
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "member.html", data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func (h *Handler) renderPartial(w http.ResponseWriter, name string, data interface{}) {
 	tmpl, err := h.templates.Clone()
 	if err != nil {

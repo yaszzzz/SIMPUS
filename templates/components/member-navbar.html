@@ -12,18 +12,22 @@
     </div>
     <div class="navbar-right">
         <a href="/member/dashboard" class="btn btn-secondary btn-sm">Dashboard</a>
-        <a href="/member/catalog" class="btn btn-secondary btn-sm">Katalog Buku</a>
-        <a href="/member/my-borrowings" class="btn btn-secondary btn-sm">Peminjaman Saya</a>
-        <div class="user-menu">
-            <div class="user-avatar">
-                {{if .User}}{{slice .User.Username 0 1 | upper}}{{else}}M{{end}}
+        <a href="/member/books" class="btn btn-secondary btn-sm">Katalog Buku</a>
+        <a href="/member/history" class="btn btn-secondary btn-sm">Peminjaman Saya</a>
+        <a href="/member/notifications" class="btn btn-secondary btn-sm">Notifikasi</a>
+        <a href="/member/profile" class="btn btn-secondary btn-sm">Profil</a>
+        <div class="user-menu border-start ps-3 ms-2">
+            <div class="user-avatar text-white bg-primary">
+                {{if .User}}{{slice .User.Name 0 1 | upper}}{{else}}M{{end}}
             </div>
             <div class="user-info">
-                <span class="user-name">{{if .User}}{{.User.Username}}{{else}}Member{{end}}</span>
-                <span class="user-role">Anggota</span>
+                <span class="user-name">{{if .User}}{{.User.Name}}{{else}}Member{{end}}</span>
+                <span class="user-role">{{if .User}}{{.User.MemberCode}}{{else}}Anggota{{end}}</span>
             </div>
         </div>
-        <a href="/logout" class="btn btn-secondary btn-sm">Logout</a>
+        <form action="/logout" method="POST" class="d-inline ms-2">
+            <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+        </form>
     </div>
 </header>
 {{end}}

@@ -39,6 +39,13 @@ func (s *Service) CreateMember(data *models.MemberCreate) (int64, error) {
 }
 
 func (s *Service) UpdateMember(id int, data *models.MemberUpdate) error {
+	if data.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		data.Password = string(hashedPassword)
+	}
 	return s.repo.Update(id, data)
 }
 

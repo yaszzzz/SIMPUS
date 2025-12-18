@@ -74,13 +74,13 @@
                 <div class="d-grid d-md-flex gap-2">
                     <a href="/member/books" class="btn btn-outline-secondary px-4">Kembali ke Katalog</a>
                     {{if gt .Book.Stock 0}}
-                    <!-- Future Feature: Self Service Borrowing -->
-                    <!-- <button class="btn btn-primary px-4" disabled title="Hubungi petugas untuk meminjam">
-                        Minta Peminjaman
-                    </button> -->
-                    <div class="alert alert-info d-inline-block py-2 px-3 mb-0 fs-7">
-                        <small>💡 Hubungi petugas perpustakaan untuk meminjam buku ini.</small>
-                    </div>
+                    <form action="/member/borrowings" method="POST" class="d-inline">
+                        <input type="hidden" name="book_id" value="{{.Book.ID}}">
+                        <button type="submit" class="btn btn-primary px-4"
+                            onclick="return confirm('Apakah Anda yakin ingin meminjam buku ini?')">
+                            Pinjam Buku Ini
+                        </button>
+                    </form>
                     {{end}}
                 </div>
             </div>

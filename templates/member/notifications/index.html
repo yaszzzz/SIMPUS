@@ -1,0 +1,41 @@
+{{define "content"}}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="fw-bold mb-3">Notifikasi</h2>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {{if .Notifications}}
+                    {{range .Notifications}}
+                    <div class="list-group-item list-group-item-action p-4 border-0 border-bottom">
+                        <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+                            <h5 class="mb-1 {{if eq .Type " keterlambatan"}}text-danger{{else}}text-primary{{end}}
+                                fw-bold">
+                                {{.Title}}
+                            </h5>
+                            <small class="text-muted">{{.CreatedAt.Format "02 Jan 2006 15:04"}}</small>
+                        </div>
+                        <p class="mb-1 text-secondary" style="font-size: 0.95rem;">{{.Message}}</p>
+                    </div>
+                    {{end}}
+                    {{else}}
+                    <div class="text-center py-5 text-muted">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bell-off mb-2"
+                            width="48" height="48" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M9.346 5.353c.2 -.071 .407 -.123 .619 -.152l.035 -.001v-2h4v2a4 4 0 0 1 4 4v4m0 4v1a3 3 0 0 1 -3 3h-8a3 3 0 0 1 -3 -3v-8c0 -1.084 .424 -2.067 1.11 -2.8" />
+                            <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+                            <line x1="3" y1="3" x2="21" y2="21" />
+                        </svg>
+                        <p class="mb-0">Tidak ada notifikasi baru.</p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

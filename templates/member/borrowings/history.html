@@ -1,0 +1,112 @@
+{{define "content"}}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="fw-bold mb-3">Riwayat Peminjaman</h2>
+
+        {{if .Success}}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="20" height="20"
+                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M5 12l5 5l10 -10" />
+            </svg>
+            {{.Success}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {{end}}
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3 ps-4 border-0">Buku</th>
+                                <th class="py-3 border-0">Tgl Pinjam</th>
+                                <th class="py-3 border-0">Jatuh Tempo</th>
+                                <th class="py-3 border-0">Tgl Kembali</th>
+                                <th class="py-3 border-0">Status</th>
+                                <th class="py-3 pe-4 border-0">Denda</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{if .Borrowings}}
+                            {{range .Borrowings}}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {{if .Book.Cover}}
+                                        <img src="/static/uploads/{{.Book.Cover}}" alt="{{.Book.Title}}"
+                                            class="rounded me-3" style="width: 40px; height: 60px; object-fit: cover;">
+                                        {{else}}
+                                        <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 40px; height: 60px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-muted" width="20"
+                                                height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                                                <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                                                <line x1="12" y1="6" x2="12" y2="19" />
+                                                <line x1="21" y1="6" x2="21" y2="19" />
+                                            </svg>
+                                        </div>
+                                        {{end}}
+                                        <div>
+                                            <div class="fw-semibold">{{.Book.Title}}</div>
+                                            <div class="small text-muted">{{.Book.Author.Name}}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{.BorrowDate.Format "02 Jan 2006"}}</td>
+                                <td>{{.DueDate.Format "02 Jan 2006"}}</td>
+                                <td>
+                                    {{if .ReturnDate.Valid}}
+                                    {{.ReturnDate.Time.Format "02 Jan 2006"}}
+                                    {{else}}
+                                    -
+                                    {{end}}
+                                </td>
+                                <td>
+                                    {{if eq .Status "dipinjam"}}
+                                    <span class="badge bg-warning text-dark">Dipinjam</span>
+                                    {{else if eq .Status "dikembalikan"}}
+                                    <span class="badge bg-success">Dikembalikan</span>
+                                    {{else}}
+                                    <span class="badge bg-danger">Terlambat</span>
+                                    {{end}}
+                                </td>
+                                <td class="pe-4">
+                                    {{if gt .Fine 0}}
+                                    <span class="text-danger fw-semibold">Rp {{printf "%.0f" .Fine}}</span>
+                                    {{else}}
+                                    -
+                                    {{end}}
+                                </td>
+                            </tr>
+                            {{end}}
+                            {{else}}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="icon icon-tabler icon-tabler-history mb-2" width="48" height="48"
+                                        viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" fill="none"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <polyline points="12 8 12 12 14 14" />
+                                        <path d="M3.05 11a9 9 0 1 1 .5 9m-.5 5v-5h5" />
+                                    </svg>
+                                    <p class="mb-0">Belum ada riwayat peminjaman.</p>
+                                    <a href="/member/books" class="btn btn-sm btn-outline-primary mt-3">Cari Buku</a>
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

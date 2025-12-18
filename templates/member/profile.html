@@ -1,0 +1,91 @@
+{{define "content"}}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-4">Profil Saya</h2>
+
+        {{if .Success}}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="20" height="20"
+                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M5 12l5 5l10 -10" />
+            </svg>
+            {{.Success}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {{end}}
+
+        {{if .Error}}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-alert-circle" width="20"
+                height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            {{.Error}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {{end}}
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form action="/member/profile" method="POST">
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label text-muted">Kode Anggota</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control-plaintext fw-bold" value="{{.Member.MemberCode}}"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label text-muted">Email</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control-plaintext" value="{{.Member.Email}}" readonly>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <h5 class="mb-3 text-primary">Edit Informasi</h5>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nama Lengkap</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{.Member.Name}}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Nomor Telepon</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" value="{{.Member.Phone}}"
+                            required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Alamat</label>
+                        <textarea class="form-control" id="address" name="address" rows="3"
+                            required>{{.Member.Address}}</textarea>
+                    </div>
+
+                    <hr class="my-4">
+                    <h5 class="mb-3 text-secondary">Ganti Password (Opsional)</h5>
+                    <p class="text-muted small mb-3">Biarkan kosong jika tidak ingin mengubah password.</p>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password Baru</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                            placeholder="********">
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="/member/dashboard" class="btn btn-light px-4">Batal</a>
+                        <button type="submit" class="btn btn-primary px-4">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

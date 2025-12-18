@@ -32,4 +32,5 @@ type MemberUpdate struct {
 	MemberType string `json:"member_type"`
 	Address    string `json:"address"`
 	IsActive   bool   `json:"is_active"`
+	Password   string `json:"password,omitempty"`
 }

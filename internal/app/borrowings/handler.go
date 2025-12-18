@@ -170,12 +170,18 @@ func (h *Handler) render(w http.ResponseWriter, name string, data interface{}) {
 		return
 	}
 
-	tmpl, err = tmpl.ParseFiles(
+	files := []string{
 		filepath.Join("templates", "layouts", "admin.html"),
 		filepath.Join("templates", "components", "sidebar.html"),
 		filepath.Join("templates", "components", "navbar.html"),
 		filepath.Join("templates", name),
-	)
+	}
+
+	if name == "admin/borrowings/index.html" {
+		files = append(files, filepath.Join("templates", "admin", "borrowings", "table.html"))
+	}
+
+	tmpl, err = tmpl.ParseFiles(files...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -200,6 +206,71 @@ func (h *Handler) renderPartial(w http.ResponseWriter, name string, data interfa
 	}
 
 	if err := tmpl.Execute(w, data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) MemberRequest(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Redirect(w, r, "/member/books?error=Form tidak valid", http.StatusSeeOther)
+		return
+	}
+
+	bookID, _ := strconv.Atoi(r.FormValue("book_id"))
+	claims := middleware.GetUserFromContext(r.Context())
+
+	data := &models.BorrowingCreate{
+		MemberID:   claims.UserID,
+		BookID:     bookID,
+		BorrowDays: 7, // Default peminjaman mandiri 7 hari
+		Notes:      "Peminjaman Mandiri",
+	}
+
+	_, err := h.service.CreateBorrowing(data, claims.UserID)
+	if err != nil {
+		http.Redirect(w, r, "/member/books/"+strconv.Itoa(bookID)+"?error="+err.Error(), http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, "/member/history?success=Berhasil meminjam buku", http.StatusSeeOther)
+}
+
+func (h *Handler) MemberHistory(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.GetUserFromContext(r.Context())
+	borrowings, err := h.service.GetMemberBorrowings(claims.UserID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]interface{}{
+		"Title":      "Riwayat Peminjaman - SIMPUS",
+		"Borrowings": borrowings,
+		"User":       claims,
+		"Success":    r.URL.Query().Get("success"),
+	}
+
+	h.renderMember(w, "member/borrowings/history.html", data)
+}
+
+func (h *Handler) renderMember(w http.ResponseWriter, name string, data interface{}) {
+	tmpl, err := h.templates.Clone()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err = tmpl.ParseFiles(
+		filepath.Join("templates", "layouts", "member.html"),
+		filepath.Join("templates", "components", "member_navbar.html"),
+		filepath.Join("templates", name),
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "member.html", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

@@ -1,0 +1,92 @@
+{{define "borrowings-table"}}
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Anggota</th>
+                    <th>Buku</th>
+                    <th>Tanggal Pinjam</th>
+                    <th>Jatuh Tempo</th>
+                    <th>Status</th>
+                    <th>Denda</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{if .Borrowings}}
+                {{range .Borrowings}}
+                <tr>
+                    <td>#{{.ID}}</td>
+                    <td>
+                        <strong>{{if .Member}}{{.Member.Name}}{{else}}-{{end}}</strong>
+                        {{if .Member}}<br><small class="text-muted">{{.Member.MemberCode}}</small>{{end}}
+                    </td>
+                    <td>{{if .Book}}{{.Book.Title}}{{else}}-{{end}}</td>
+                    <td>{{.BorrowDate.Format "02 Jan 2006"}}</td>
+                    <td>{{.DueDate.Format "02 Jan 2006"}}</td>
+                    <td>
+                        {{if eq .Status "dipinjam"}}
+                        <span class="badge bg-warning text-dark">Dipinjam</span>
+                        {{else if eq .Status "dikembalikan"}}
+                        <span class="badge bg-success">Dikembalikan</span>
+                        {{else}}
+                        <span class="badge bg-danger">Terlambat</span>
+                        {{end}}
+                    </td>
+                    <td>
+                        {{if gt .Fine 0}}
+                        <span class="text-danger">Rp {{printf "%.0f" .Fine}}</span>
+                        {{else}}
+                        -
+                        {{end}}
+                    </td>
+                    <td>
+                        {{if eq .Status "dipinjam"}}
+                        <button class="btn btn-success btn-sm" hx-post="/admin/borrowings/{{.ID}}/return"
+                            hx-confirm="Konfirmasi pengembalian buku?" hx-swap="none"
+                            onclick="setTimeout(() => location.reload(), 500)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" width="16" height="16">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7" />
+                            </svg>
+                            Kembalikan
+                        </button>
+                        {{else}}
+                        <span class="text-muted">-</span>
+                        {{end}}
+                    </td>
+                </tr>
+                {{end}}
+                {{else}}
+                <tr>
+                    <td colspan="8" class="text-center text-muted" style="padding: 3rem;">
+                        Tidak ada peminjaman ditemukan
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{if gt .TotalPages 1}}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {{if lt .Page 2}}disabled{{end}}">
+            <a class="page-link" hx-get="/admin/borrowings?page={{subtract .Page 1}}&status={{.Status}}"
+                hx-target="#borrowings-table" href="#">Previous</a>
+        </li>
+        <li class="page-item disabled">
+            <span class="page-link">Halaman {{.Page}} dari {{.TotalPages}}</span>
+        </li>
+        <li class="page-item {{if eq .Page .TotalPages}}disabled{{end}}">
+            <a class="page-link" hx-get="/admin/borrowings?page={{add .Page 1}}&status={{.Status}}"
+                hx-target="#borrowings-table" href="#">Next</a>
+        </li>
+    </ul>
+</nav>
+{{end}}
+{{end}}

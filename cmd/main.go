@@ -103,6 +103,7 @@ func main() {
 	borrowHandler := borrowings.NewHandler(borrowService, bookService, memberService, templates)
 	dashboardHandler := dashboard.NewHandler(bookService, memberService, borrowService, templates)
 	reportHandler := reports.NewHandler(borrowService, templates)
+	notifHandler := notifications.NewHandler(notifService, templates)
 
 	// Initialize middleware
 	authMw := authMiddleware.NewAuthMiddleware(authService)
@@ -124,7 +125,17 @@ func main() {
 
 	// Public routes
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		tmpl, err := templates.Clone()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl, err = tmpl.ParseFiles("templates/home.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl.Execute(w, nil)
 	})
 	r.Get("/login", authHandler.LoginPage)
 	r.Post("/login", authHandler.Login)
@@ -190,6 +201,17 @@ func main() {
 		// Books
 		r.Get("/books", bookHandler.MemberIndex)
 		r.Get("/books/{id}", bookHandler.MemberShow)
+
+		// Borrowings
+		r.Post("/borrowings", borrowHandler.MemberRequest)
+		r.Get("/history", borrowHandler.MemberHistory)
+
+		// Profile
+		r.Get("/profile", memberHandler.Profile)
+		r.Post("/profile", memberHandler.UpdateProfile)
+
+		// Notifications
+		r.Get("/notifications", notifHandler.MemberIndex)
 	})
 
 	// Start server
